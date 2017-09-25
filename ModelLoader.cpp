@@ -20,6 +20,7 @@ using namespace std;
 #include <assimp/cimport.h>
 #include <assimp/types.h>
 #include <assimp/scene.h>
+
 #include <assimp/postprocess.h>
 #include "assimp_extras.h"
 
@@ -27,6 +28,11 @@ using namespace std;
 const aiScene* scene = NULL;
 GLuint scene_list = 0;
 float angle = 0;
+
+double tickAdd = 0;
+int tick = 0;
+double TicksPerSec = 0;
+
 aiVector3D scene_min, scene_max, scene_center;
 bool modelRotn = true;
 ofstream fileout;
@@ -42,15 +48,42 @@ bool loadModel(const char* fileName)
 	return true;
 }
 
+void motion(const aiScene* sc, int tick)
+{
+	aiAnimation* anim = new aiAnimation;
+	anim = sc->mAnimations[0];
+	double ticksPerSecond = anim->mTicksPerSecond;//10.0
+	TicksPerSec = ticksPerSecond;//10.0
+	double durationInTicks = anim->mDuration;//9.0
+
+	for (int i = 0; i < anim->mNumChannels; i++)
+	{
+		aiNodeAnim* chnl= anim->mChannels[i];		
+		aiVector3D posn= chnl->mPositionKeys[tick].mValue;
+		aiQuaternion rotn = chnl->mRotationKeys[tick].mValue;
+		
+		//取出关节的Transformation 计算转换和再还回去
+		aiNode *node = sc->mRootNode->FindNode(chnl->mNodeName);
+		aiMatrix4x4 matPos = node->mTransformation;
+		aiTransposeMatrix4(&matPos);//以上三步和render前部一样
+		matPos.Translation(posn, matPos);//将关节处的点translation
+		aiMatrix3x3 matRon3 = rotn.GetMatrix();
+		aiMatrix4x4 matRon = aiMatrix4x4(matRon3);//rotation
+		aiMatrix4x4 matProd = matPos*matRon;
+		node->mTransformation = matProd;
+	}
+		
+}
+
 // ------A recursive function to traverse scene graph and render each mesh----------
 void render (const aiScene* sc, const aiNode* nd)
 {
 	aiMatrix4x4 m = nd->mTransformation;
 	aiMesh* mesh;
-	aiFace* face;
-	
+	aiFace* face;	
 
 	aiTransposeMatrix4(&m);   //Convert to column-major order
+
 	glPushMatrix();
 	glMultMatrixf((float*)&m);   //Multiply by the transformation matrix for this node
 
@@ -137,6 +170,15 @@ void update(int value)
 	glutTimerFunc(50, update, 0);
 }
 
+void updateAnimation(int value)
+{
+	tickAdd+= tickAdd+50/1000;//current time(seconds)
+	tick = tickAdd*TicksPerSec;
+	if (tickAdd > 1) tickAdd = 0;
+	glutPostRedisplay();
+	glutTimerFunc(50, updateAnimation, 1);
+}
+
 //----Keyboard callback to toggle initial model orientation---
 void keyboard(unsigned char key, int x, int y)
 {
@@ -157,7 +199,7 @@ void display()
 	gluLookAt(0, 0, 3, 0, 0, -5, 0, 1, 0);
 	glLightfv(GL_LIGHT0, GL_POSITION, pos);
 
-	glRotatef(angle, 0.f, 1.f ,0.f);  //Continuous rotation about the y-axis
+	//glRotatef(angle, 0.f, 1.f ,0.f);  //Continuous rotation about the y-axis
 	if(modelRotn) glRotatef(-90, 1, 0, 0);		  //First, rotate the model about x-axis if needed.
 
 	// scale the whole asset to fit into our view frustum 
@@ -179,7 +221,8 @@ void display()
             // now begin at the root node of the imported data and traverse
             // the scenegraph by multiplying subsequent local transforms
             // together on GL's matrix stack.
-	       render(scene, scene->mRootNode);
+		   motion(scene, tick);//先把变换后的坐标点给替换了
+	       render(scene, scene->mRootNode);//没改变该函数
 	    glEndList();
 	}
 
@@ -201,7 +244,7 @@ int main(int argc, char** argv)
 
 	initialise();
 	glutDisplayFunc(display);
-	glutTimerFunc(50, update, 0);
+	glutTimerFunc(50, updateAnimation, 1);//glutTimerFunc(50, updateAnimation, 1);
 	glutKeyboardFunc(keyboard);
 	glutMainLoop();
 

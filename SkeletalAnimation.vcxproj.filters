@@ -24,6 +24,12 @@
     <None Include="Test.bvh">
       <Filter>资源文件</Filter>
     </None>
+    <None Include="dwarf.x">
+      <Filter>资源文件</Filter>
+    </None>
+    <None Include="wuson.x">
+      <Filter>资源文件</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="assimp_extras.h">

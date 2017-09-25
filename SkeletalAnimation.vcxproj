@@ -147,7 +147,9 @@
   <ItemGroup>
     <None Include="01_01.bvh" />
     <None Include="Dance.bvh" />
+    <None Include="dwarf.x" />
     <None Include="Test.bvh" />
+    <None Include="wuson.x" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="assimp_extras.h" />
