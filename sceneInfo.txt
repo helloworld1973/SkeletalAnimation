@@ -1,0 +1,60 @@
+Success! 
+---------------- Scene Data -------------------
+Number of animations = 1
+Number of cameras = 0
+Number of lights = 0
+Number of materials = 1
+Number of meshes = 1
+Number of textures = 0
+--------------------------------------
+Mesh 0: nverts = 60  nfaces =  20  nbones = 4  Material index = 0
+Material: 0
+   Ambient = 0 0 0 0
+   Diffuse = 0 0 0 0
+   Specular = 0 0 0 0  Shininess = 0
+============= Node Data ========================
+Node Name: Shoulder  nchild = 1  nmesh = 1
+Mesh indices: 0 
+Transformation:  1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 
+============= Node Data ========================
+Node Name: Elbow  nchild = 1  nmesh = 0
+Mesh indices: 
+Transformation:  1 0 0 2 0 1 0 0.5 0 0 1 0 0 0 0 1 
+============= Node Data ========================
+Node Name: Wrist  nchild = 1  nmesh = 0
+Mesh indices: 
+Transformation:  1 0 0 1.5 0 1 0 0.5 0 0 1 0 0 0 0 1 
+============= Node Data ========================
+Node Name: EndSite_Wrist  nchild = 0  nmesh = 0
+Mesh indices: 
+Transformation:  1 0 0 0.5 0 1 0 0.5 0 0 1 0 0 0 0 1 
+---------------- Animation Data -------------------
+Number of animations = 1
+ --- Anim 0:  Name = Motion  nchanls = 3 nticks = 10  duration (ticks) = 9
+     Channel 0: nodeName = Shoulder nposkeys = 10  nrotKeys = 1 nsclKeys = 1
+        posKey 0:  Time = 0 Value = 0.1 0 0
+        posKey 1:  Time = 1 Value = 0.2 0 0
+        posKey 2:  Time = 2 Value = 0.3 0 0
+        posKey 3:  Time = 3 Value = 0.4 0 0
+        posKey 4:  Time = 4 Value = 0.5 0 0
+        posKey 5:  Time = 5 Value = 0.6 0 0
+        posKey 6:  Time = 6 Value = 0.7 0 0
+        posKey 7:  Time = 7 Value = 0.8 0 0
+        posKey 8:  Time = 8 Value = 0.9 0 0
+        posKey 9:  Time = 9 Value = 1 0 0
+        rotnKey 0:  Time = 0 Value = 1 0 0 0
+     Channel 1: nodeName = Elbow nposkeys = 1  nrotKeys = 10 nsclKeys = 1
+        posKey 0:  Time = 0 Value = 2 0.5 0
+        rotnKey 0:  Time = 0 Value = 0.999048 0 0 0.0436194
+        rotnKey 1:  Time = 1 Value = 0.996195 0 0 0.0871558
+        rotnKey 2:  Time = 2 Value = 0.991445 0 0 0.130526
+        rotnKey 3:  Time = 3 Value = 0.984808 0 0 0.173648
+        rotnKey 4:  Time = 4 Value = 0.976296 0 0 0.21644
+        rotnKey 5:  Time = 5 Value = 0.965926 0 0 0.258819
+        rotnKey 6:  Time = 6 Value = 0.953717 0 0 0.300706
+        rotnKey 7:  Time = 7 Value = 0.939693 0 0 0.34202
+        rotnKey 8:  Time = 8 Value = 0.92388 0 0 0.382683
+        rotnKey 9:  Time = 9 Value = 0.906308 0 0 0.422618
+     Channel 2: nodeName = Wrist nposkeys = 1  nrotKeys = 1 nsclKeys = 1
+        posKey 0:  Time = 0 Value = 1.5 0.5 0
+        rotnKey 0:  Time = 0 Value = 1 0 0 0

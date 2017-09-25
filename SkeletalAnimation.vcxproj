@@ -71,6 +71,8 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
+    <IncludePath>D:\VS2015ThirdDependencies\Include;$(IncludePath)</IncludePath>
+    <LibraryPath>D:\VS2015ThirdDependencies\Libs;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
@@ -92,6 +94,7 @@
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalDependencies>glew32.lib;glew32s.lib;assimp.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -142,6 +145,15 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <None Include="01_01.bvh" />
+    <None Include="Dance.bvh" />
+    <None Include="Test.bvh" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="assimp_extras.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="ModelLoader.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
