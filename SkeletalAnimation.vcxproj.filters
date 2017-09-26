@@ -30,7 +30,7 @@
     <None Include="wuson.x">
       <Filter>资源文件</Filter>
     </None>
-    <None Include="zombie_slow.bvh">
+    <None Include="02_01.bvh">
       <Filter>资源文件</Filter>
     </None>
   </ItemGroup>

@@ -10,19 +10,10 @@ d:\vs2015projects\skeletalanimation\skeletalanimation\assimp_extras.h(231): warn
 d:\vs2015projects\skeletalanimation\skeletalanimation\assimp_extras.h(237): warning C4018: “<”: 有符号/无符号不匹配
 d:\vs2015projects\skeletalanimation\skeletalanimation\assimp_extras.h(242): warning C4018: “<”: 有符号/无符号不匹配
 d:\vs2015projects\skeletalanimation\skeletalanimation\assimp_extras.h(248): warning C4018: “<”: 有符号/无符号不匹配
-<<<<<<< HEAD
-d:\vs2015projects\skeletalanimation\skeletalanimation\modelloader.cpp(58): warning C4018: “<”: 有符号/无符号不匹配
-d:\vs2015projects\skeletalanimation\skeletalanimation\modelloader.cpp(105): warning C4018: “<”: 有符号/无符号不匹配
-d:\vs2015projects\skeletalanimation\skeletalanimation\modelloader.cpp(122): warning C4018: “<”: 有符号/无符号不匹配
-d:\vs2015projects\skeletalanimation\skeletalanimation\modelloader.cpp(137): warning C4018: “<”: 有符号/无符号不匹配
-d:\vs2015projects\skeletalanimation\skeletalanimation\modelloader.cpp(155): warning C4018: “<”: 有符号/无符号不匹配
-=======
 d:\vs2015projects\skeletalanimation\skeletalanimation\modelloader.cpp(59): warning C4018: “<”: 有符号/无符号不匹配
-d:\vs2015projects\skeletalanimation\skeletalanimation\modelloader.cpp(91): warning C4018: “<”: 有符号/无符号不匹配
-d:\vs2015projects\skeletalanimation\skeletalanimation\modelloader.cpp(108): warning C4018: “<”: 有符号/无符号不匹配
+d:\vs2015projects\skeletalanimation\skeletalanimation\modelloader.cpp(106): warning C4018: “<”: 有符号/无符号不匹配
 d:\vs2015projects\skeletalanimation\skeletalanimation\modelloader.cpp(123): warning C4018: “<”: 有符号/无符号不匹配
-d:\vs2015projects\skeletalanimation\skeletalanimation\modelloader.cpp(141): warning C4018: “<”: 有符号/无符号不匹配
-d:\vs2015projects\skeletalanimation\skeletalanimation\modelloader.cpp(176): warning C4244: “=”: 从“double”转换到“int”，可能丢失数据
->>>>>>> parent of 1351631... move but the behavior odd
+d:\vs2015projects\skeletalanimation\skeletalanimation\modelloader.cpp(138): warning C4018: “<”: 有符号/无符号不匹配
+d:\vs2015projects\skeletalanimation\skeletalanimation\modelloader.cpp(156): warning C4018: “<”: 有符号/无符号不匹配
   SkeletalAnimation.vcxproj -> D:\VS2015Projects\SkeletalAnimation\Debug\SkeletalAnimation.exe
   SkeletalAnimation.vcxproj -> D:\VS2015Projects\SkeletalAnimation\Debug\SkeletalAnimation.pdb (Full PDB)

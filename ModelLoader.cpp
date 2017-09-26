@@ -26,12 +26,12 @@ using namespace std;
 
 
 const aiScene* scene = NULL;
-GLuint scene_list = 0;
 float angle = 0;
+const int TicksPerSec = 344;//手动
+const char* fileName = "02_01.bvh";
 
-double tickAdd = 0;
 int tick = 0;
-double TicksPerSec = 0;
+
 
 aiVector3D scene_min, scene_max, scene_center;
 bool modelRotn = true;
@@ -55,22 +55,39 @@ void motion(const aiScene* sc, int tick)
 	aiAnimation* anim = new aiAnimation;
 	anim = sc->mAnimations[0];
 
+
 	for (int i = 0; i < anim->mNumChannels; i++)
 	{
-		aiNodeAnim* chnl= anim->mChannels[i];		
-		aiVector3D posn= chnl->mPositionKeys[tick].mValue;
-		aiQuaternion rotn = chnl->mRotationKeys[tick].mValue;
-		
+		aiNodeAnim* chnl = anim->mChannels[i];
+		int numPositonKeys = chnl->mNumPositionKeys;
+		aiVector3D posn; aiQuaternion rotn;
+		if (numPositonKeys > tick)
+		{
+			posn = chnl->mPositionKeys[tick].mValue;
+		}
+		else {
+			posn = chnl->mPositionKeys[numPositonKeys - 1].mValue;
+		}
+		int numRotationKeys = chnl->mNumRotationKeys;
+		if (numRotationKeys > tick)
+		{
+			rotn = chnl->mRotationKeys[tick].mValue;
+		}
+		else
+		{
+			rotn = chnl->mRotationKeys[numRotationKeys - 1].mValue;
+		}
+
 		//取出关节的Transformation 计算转换和再还回去
 		aiNode *node = sc->mRootNode->FindNode(chnl->mNodeName);
 		aiMatrix4x4 matPos = node->mTransformation;
 		//aiTransposeMatrix4(&matPos);//以上三步和render前部一样
-	    matPos.Translation(posn, matPos);//将关节处的点translation
+		matPos.Translation(posn, matPos);//将关节处的点translation
 		aiMatrix3x3 matRon3 = rotn.GetMatrix();
 		aiMatrix4x4 matRon = aiMatrix4x4(matRon3);//rotation
 		aiMatrix4x4 matProd = matPos*matRon;
 		node->mTransformation = matProd;
-	}	
+	}
 }
 
 // ------A recursive function to traverse scene graph and render each mesh----------
@@ -153,28 +170,20 @@ void initialise()
 	glLightModeli(GL_LIGHT_MODEL_TWO_SIDE, GL_TRUE);
 	glColorMaterial(GL_FRONT_AND_BACK, GL_DIFFUSE);
 	fileout.open("sceneInfo.txt", ios::out);
-	loadModel("Test.bvh");		//<<<-------------Specify input file name here  --------------
+	loadModel(fileName);		//<<<-------------Specify input file name here  --------------
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
 	gluPerspective(45, 1, 1.0, 1000.0);
+	//glFrustum(1, 1, 1, 1, 1.0, 1000.0);
 }
 
-//----Timer callback for continuous rotation of the model about y-axis----
+
 void update(int value)
-{
-	angle++;
-	if(angle > 360) angle = 0;
+{	
+	tick++;
+	if (tick > TicksPerSec) tick = 0;
 	glutPostRedisplay();
-	glutTimerFunc(50, update, 0);
-}
-
-void updateAnimation(int value)
-{
-	tickAdd+= tickAdd+50/1000;//current time(seconds)
-	tick = tickAdd*TicksPerSec;
-	if (tickAdd > 1) tickAdd = 0;
-	glutPostRedisplay();
-	glutTimerFunc(50, updateAnimation, 1);
+	glutTimerFunc(100, update, 1);
 }
 
 //----Keyboard callback to toggle initial model orientation---
@@ -194,7 +203,7 @@ void display()
 
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
-	gluLookAt(0, 0, 3, 0, 0, -5, 0, 1, 0);
+	gluLookAt(0, 0, 5, 0, 0, 0, 0, 1, 0);
 	glLightfv(GL_LIGHT0, GL_POSITION, pos);
 
 	//glRotatef(angle, 0.f, 1.f ,0.f);  //Continuous rotation about the y-axis
@@ -212,19 +221,12 @@ void display()
 
         // if the display list has not been made yet, create a new one and
         // fill it with scene contents
-	if(scene_list == 0)
-	{
-	    scene_list = glGenLists(1);
-	    glNewList(scene_list, GL_COMPILE);
+
             // now begin at the root node of the imported data and traverse
             // the scenegraph by multiplying subsequent local transforms
             // together on GL's matrix stack.
 		   motion(scene, tick);//先把变换后的坐标点给替换了
 	       render(scene, scene->mRootNode);//没改变该函数
-	    glEndList();
-	}
-
-	glCallList(scene_list);
 
 	glutSwapBuffers();
 }
@@ -235,14 +237,14 @@ int main(int argc, char** argv)
 {
 	glutInit(&argc, argv);
 	glutInitDisplayMode(GLUT_RGB | GLUT_DOUBLE | GLUT_DEPTH);
-	glutInitWindowSize(600, 600);
+	glutInitWindowSize(800, 800);
 	glutCreateWindow("Assimp Test");
 	glutInitContextVersion (4, 2);
 	glutInitContextProfile ( GLUT_CORE_PROFILE );
 
 	initialise();
 	glutDisplayFunc(display);
-	glutTimerFunc(50, updateAnimation, 1);//glutTimerFunc(50, updateAnimation, 1);
+	glutTimerFunc(100, update, 1);//glutTimerFunc(50, updateAnimation, 1);
 	glutKeyboardFunc(keyboard);
 	glutMainLoop();
 

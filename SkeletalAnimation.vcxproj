@@ -146,11 +146,11 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <None Include="01_01.bvh" />
+    <None Include="02_01.bvh" />
     <None Include="Dance.bvh" />
     <None Include="dwarf.x" />
     <None Include="Test.bvh" />
     <None Include="wuson.x" />
-    <None Include="zombie_slow.bvh" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="assimp_extras.h" />
