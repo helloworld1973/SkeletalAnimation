@@ -57,26 +57,10 @@ void motion(const aiScene* sc, int tick)
 
 	for (int i = 0; i < anim->mNumChannels; i++)
 	{
-		aiNodeAnim* chnl= anim->mChannels[i];
-		int numPositonKeys = chnl->mNumPositionKeys;
-		aiVector3D posn; aiQuaternion rotn;
-		if (numPositonKeys > tick)
-		{
-			posn = chnl->mPositionKeys[tick].mValue;
-		}
-		else {
-			posn = chnl->mPositionKeys[numPositonKeys-1].mValue;
-		}
-		int numRotationKeys = chnl->mNumRotationKeys;
-		if (numRotationKeys > tick)
-		{
-			rotn = chnl->mRotationKeys[tick].mValue;
-		}
-		else
-		{
-			rotn = chnl->mRotationKeys[numRotationKeys-1].mValue;
-		}
-
+		aiNodeAnim* chnl= anim->mChannels[i];		
+		aiVector3D posn= chnl->mPositionKeys[tick].mValue;
+		aiQuaternion rotn = chnl->mRotationKeys[tick].mValue;
+		
 		//取出关节的Transformation 计算转换和再还回去
 		aiNode *node = sc->mRootNode->FindNode(chnl->mNodeName);
 		aiMatrix4x4 matPos = node->mTransformation;
@@ -175,16 +159,22 @@ void initialise()
 	gluPerspective(45, 1, 1.0, 1000.0);
 }
 
-
-
+//----Timer callback for continuous rotation of the model about y-axis----
 void update(int value)
 {
-	tickAdd+= tickAdd+1.0/ ceil(TicksPerSec);//current time(seconds)
-	double tempTick= tickAdd*ceil(TicksPerSec);
-	tick = (int)tempTick;
+	angle++;
+	if(angle > 360) angle = 0;
+	glutPostRedisplay();
+	glutTimerFunc(50, update, 0);
+}
+
+void updateAnimation(int value)
+{
+	tickAdd+= tickAdd+50/1000;//current time(seconds)
+	tick = tickAdd*TicksPerSec;
 	if (tickAdd > 1) tickAdd = 0;
 	glutPostRedisplay();
-	glutTimerFunc(200, update, 1);
+	glutTimerFunc(50, updateAnimation, 1);
 }
 
 //----Keyboard callback to toggle initial model orientation---
@@ -199,7 +189,6 @@ void keyboard(unsigned char key, int x, int y)
 //    stored for subsequent display updates.
 void display()
 {
-	//loadModel("Dance.bvh");
 	float pos[4] = {50, 50, 50, 1};
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -223,19 +212,19 @@ void display()
 
         // if the display list has not been made yet, create a new one and
         // fill it with scene contents
-	//if(scene_list == 0)
-	//{
-	   // scene_list = glGenLists(1);
-	   // glNewList(scene_list, GL_COMPILE);
+	if(scene_list == 0)
+	{
+	    scene_list = glGenLists(1);
+	    glNewList(scene_list, GL_COMPILE);
             // now begin at the root node of the imported data and traverse
             // the scenegraph by multiplying subsequent local transforms
             // together on GL's matrix stack.
 		   motion(scene, tick);//先把变换后的坐标点给替换了
 	       render(scene, scene->mRootNode);//没改变该函数
-	    //glEndList();
-	//}
+	    glEndList();
+	}
 
-	//glCallList(scene_list);
+	glCallList(scene_list);
 
 	glutSwapBuffers();
 }
@@ -253,7 +242,7 @@ int main(int argc, char** argv)
 
 	initialise();
 	glutDisplayFunc(display);
-	glutTimerFunc(200, update, 1);//glutTimerFunc(50, updateAnimation, 1);
+	glutTimerFunc(50, updateAnimation, 1);//glutTimerFunc(50, updateAnimation, 1);
 	glutKeyboardFunc(keyboard);
 	glutMainLoop();
 
