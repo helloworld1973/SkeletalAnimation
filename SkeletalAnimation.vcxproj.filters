@@ -30,6 +30,9 @@
     <None Include="wuson.x">
       <Filter>资源文件</Filter>
     </None>
+    <None Include="zombie_slow.bvh">
+      <Filter>资源文件</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="assimp_extras.h">

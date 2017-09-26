@@ -43,18 +43,17 @@ bool loadModel(const char* fileName)
 	if(scene == NULL) exit(1);
 	printSceneInfo(fileout, scene);
 	printTreeInfo(fileout, scene->mRootNode);
+	printMeshInfo(fileout, scene);
 	printAnimInfo(fileout, scene);
 	get_bounding_box(scene, &scene_min, &scene_max);
 	return true;
 }
 
+
 void motion(const aiScene* sc, int tick)
 {
 	aiAnimation* anim = new aiAnimation;
 	anim = sc->mAnimations[0];
-	double ticksPerSecond = anim->mTicksPerSecond;//10.0
-	TicksPerSec = ticksPerSecond;//10.0
-	double durationInTicks = anim->mDuration;//9.0
 
 	for (int i = 0; i < anim->mNumChannels; i++)
 	{
@@ -81,14 +80,13 @@ void motion(const aiScene* sc, int tick)
 		//取出关节的Transformation 计算转换和再还回去
 		aiNode *node = sc->mRootNode->FindNode(chnl->mNodeName);
 		aiMatrix4x4 matPos = node->mTransformation;
-		aiTransposeMatrix4(&matPos);//以上三步和render前部一样
-		matPos.Translation(posn, matPos);//将关节处的点translation
+		//aiTransposeMatrix4(&matPos);//以上三步和render前部一样
+	    matPos.Translation(posn, matPos);//将关节处的点translation
 		aiMatrix3x3 matRon3 = rotn.GetMatrix();
 		aiMatrix4x4 matRon = aiMatrix4x4(matRon3);//rotation
 		aiMatrix4x4 matProd = matPos*matRon;
 		node->mTransformation = matProd;
-	}
-		
+	}	
 }
 
 // ------A recursive function to traverse scene graph and render each mesh----------
@@ -98,7 +96,7 @@ void render (const aiScene* sc, const aiNode* nd)
 	aiMesh* mesh;
 	aiFace* face;	
 
-	aiTransposeMatrix4(&m);   //Convert to column-major order
+	//aiTransposeMatrix4(&m);   //Convert to column-major order
 
 	glPushMatrix();
 	glMultMatrixf((float*)&m);   //Multiply by the transformation matrix for this node

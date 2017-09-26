@@ -28,6 +28,77 @@ Transformation:  1 0 0 1.5 0 1 0 0.5 0 0 1 0 0 0 0 1
 Node Name: EndSite_Wrist  nchild = 0  nmesh = 0
 Mesh indices: 
 Transformation:  1 0 0 0.5 0 1 0 0.5 0 0 1 0 0 0 0 1 
+---------------- Mesh Data -------------------
+Mesh 0: Has Normals.
+Mesh 0: nbones = 4  nverts = 60  nfaces = 20
+ --- Bone Name: Shoulder  nweights = 12
+     Offset matrix: 1 -0 0 -0 -0 1 -0 0 0 -0 1 -0 -0 0 -0 1 
+      Vertex id: 0  weight = 1
+      Vertex id: 1  weight = 1
+      Vertex id: 2  weight = 1
+      Vertex id: 3  weight = 1
+      Vertex id: 4  weight = 1
+      Vertex id: 5  weight = 1
+      Vertex id: 6  weight = 1
+      Vertex id: 7  weight = 1
+      Vertex id: 8  weight = 1
+      Vertex id: 9  weight = 1
+      Vertex id: 10  weight = 1
+      Vertex id: 11  weight = 1
+ --- Bone Name: Elbow  nweights = 12
+     Offset matrix: 1 -0 0 -2 -0 1 -0 -0.5 0 -0 1 0 -0 0 -0 1 
+      Vertex id: 12  weight = 1
+      Vertex id: 13  weight = 1
+      Vertex id: 14  weight = 1
+      Vertex id: 15  weight = 1
+      Vertex id: 16  weight = 1
+      Vertex id: 17  weight = 1
+      Vertex id: 18  weight = 1
+      Vertex id: 19  weight = 1
+      Vertex id: 20  weight = 1
+      Vertex id: 21  weight = 1
+      Vertex id: 22  weight = 1
+      Vertex id: 23  weight = 1
+ --- Bone Name: Wrist  nweights = 12
+     Offset matrix: 1 -0 0 -3.5 0 1 0 -1 0 -0 1 0 0 0 0 1 
+      Vertex id: 24  weight = 1
+      Vertex id: 25  weight = 1
+      Vertex id: 26  weight = 1
+      Vertex id: 27  weight = 1
+      Vertex id: 28  weight = 1
+      Vertex id: 29  weight = 1
+      Vertex id: 30  weight = 1
+      Vertex id: 31  weight = 1
+      Vertex id: 32  weight = 1
+      Vertex id: 33  weight = 1
+      Vertex id: 34  weight = 1
+      Vertex id: 35  weight = 1
+ --- Bone Name: EndSite_Wrist  nweights = 24
+     Offset matrix: 1 -0 0 -4 0 1 0 -1.5 0 -0 1 0 0 0 0 1 
+      Vertex id: 36  weight = 1
+      Vertex id: 37  weight = 1
+      Vertex id: 38  weight = 1
+      Vertex id: 39  weight = 1
+      Vertex id: 40  weight = 1
+      Vertex id: 41  weight = 1
+      Vertex id: 42  weight = 1
+      Vertex id: 43  weight = 1
+      Vertex id: 44  weight = 1
+      Vertex id: 45  weight = 1
+      Vertex id: 46  weight = 1
+      Vertex id: 47  weight = 1
+      Vertex id: 48  weight = 1
+      Vertex id: 49  weight = 1
+      Vertex id: 50  weight = 1
+      Vertex id: 51  weight = 1
+      Vertex id: 52  weight = 1
+      Vertex id: 53  weight = 1
+      Vertex id: 54  weight = 1
+      Vertex id: 55  weight = 1
+      Vertex id: 56  weight = 1
+      Vertex id: 57  weight = 1
+      Vertex id: 58  weight = 1
+      Vertex id: 59  weight = 1
 ---------------- Animation Data -------------------
 Number of animations = 1
  --- Anim 0:  Name = Motion  nchanls = 3 nticks = 10  duration (ticks) = 9
