@@ -29,8 +29,8 @@ const aiScene* scene = NULL;
 float angle = 0.0;
 float rot_x = 0.0;
 float eye_x, eye_z, look_x, look_z = -1.;
-const int TicksPerSec = 10;//change
-const char* fileName = "Test.bvh";//change
+const int TicksPerSec = 219;//change
+const char* fileName = "Dance.bvh";//change
 
 int tick = 0;
 
@@ -52,18 +52,46 @@ bool loadModel(const char* fileName)
 }
 
 
-void motion(const aiScene* sc, int tick)
+void motion(const aiScene* sc, int tick, aiNode* nd)
 {
+	aiMatrix4x4 mTransformationParent;
+
+	aiNode* ndParent = nd->mParent;
+	aiString ndName=nd->mName;
+	aiNodeAnim* chnl;
+	int flag = 0;//use to identify common point(1) or end_site point(0)
+
+	if (ndParent == NULL)
+	{
+		mTransformationParent = { 1.0, 0.0, 0.0, 0.0,
+									0.0, 1.0, 0.0, 0.0,
+									0.0, 0.0, 1.0, 0.0,
+									0.0, 0.0, 0.0, 1.0 };
+	}
+	else
+	{
+		mTransformationParent = ndParent->mTransformation;
+	}
+	
 	aiAnimation* anim = new aiAnimation;
 	anim = sc->mAnimations[0];
-	aiMatrix4x4 matProd;
 
-	for (int i = 0; i < anim->mNumChannels; i++)
+	for (int i=0; i < anim->mNumChannels; i++)
 	{
-		aiNodeAnim* chnl = anim->mChannels[i];
-		int numPositonKeys = chnl->mNumPositionKeys;
+		if (anim->mChannels[i]->mNodeName.operator==(ndName))
+		{
+			chnl = anim->mChannels[i];
+			flag = 1;
+			break;
+			
+		}
+	}
+	
+	if (flag == 1)
+	{
 		aiVector3D posn; aiQuaternion rotn;
-		if (numPositonKeys > 1 )
+		int numPositonKeys = chnl->mNumPositionKeys;
+		if (numPositonKeys > 1)
 		{
 			posn = chnl->mPositionKeys[tick].mValue;
 		}
@@ -81,154 +109,66 @@ void motion(const aiScene* sc, int tick)
 		}
 
 		//取出关节的Transformation 计算转换和再还回去
-		aiNode *node = sc->mRootNode->FindNode(chnl->mNodeName);
-		aiMatrix4x4 matPos = node->mTransformation;//原始点
-		//aiTransposeMatrix4(&matPos);//以上三步和render前部一样
+
+		aiMatrix4x4 matPos = nd->mTransformation;//原始点
 		matPos.Translation(posn, matPos);//将关节处的点translation
 		aiMatrix3x3 matRon3 = rotn.GetMatrix();
-		
 		aiMatrix4x4 matRon = aiMatrix4x4(matRon3);//rotation
-		matProd = matProd*matPos*matRon;
-		node->mTransformation = matProd;
-		if (i == (anim->mNumChannels)-1)
-		{
-			aiNode *node = sc->mRootNode->FindNode("EndSite_Wrist");
-			aiMatrix4x4 endSite = { 1.0, 0.0, 0.0, 0.5, 
-				                    0.0, 1.0, 0.0, 0.5, 
-				                    0.0, 0.0, 1.0, 0.0,
-				                    0.0, 0.0, 0.0, 1.0 };
-			node->mTransformation = matProd*endSite;
-		} 
+		nd->mTransformation = mTransformationParent*matPos*matRon;
 	}
-}
-
-void special(int key, int x, int y)
-{
-	if (key == GLUT_KEY_LEFT) angle -= 1;
-	else if (key == GLUT_KEY_RIGHT) angle += 1;
-	if (key == GLUT_KEY_DOWN) rot_x += 1;
-	else if (key == GLUT_KEY_UP) rot_x -= 1;
-	
-	glutPostRedisplay();
-}
-// ------A recursive function to traverse scene graph and render each mesh----------
-void render (const aiScene* sc, const aiNode* nd)
-{
-	aiMatrix4x4 m;// = nd->mTransformation;
-	
-	aiMesh* mesh;
-	aiFace* face;	
-
-	aiMatrix4x4 offsetMatrix;
-
-	//aiTransposeMatrix4(&m);   //Convert to column-major order
-	glScalef(2.5, 2.5, 2.5);
-	//glPushMatrix();
-	//glMultMatrixf((float*)&m);   //Multiply by the transformation matrix for this node
-
-	// Draw all meshes assigned to this node
-	for (int n = 0; n < nd->mNumMeshes; n++)
+	else if (flag == 0)
 	{
-		mesh = scene->mMeshes[nd->mMeshes[n]];
+		aiMatrix4x4 matPos = nd->mTransformation;//原始点
+		nd->mTransformation = mTransformationParent*matPos;//这部分还有些问题
+	}
 
-		
 
+	for (int i = 0; i < nd->mNumChildren; i++)
+		motion(sc, tick, nd->mChildren[i]);
+}
 
-		apply_material(sc->mMaterials[mesh->mMaterialIndex]);
+void render(const aiScene* sc)
+{
+	aiMesh* mesh=scene->mMeshes[0];
+	if (mesh->HasNormals())
+		glEnable(GL_LIGHTING);
+	else
+		glDisable(GL_LIGHTING);
 
-		if(mesh->HasNormals())
-			glEnable(GL_LIGHTING);
-		else
-			glDisable(GL_LIGHTING);
+	if (mesh->HasVertexColors(0))
+		glEnable(GL_COLOR_MATERIAL);
+	else
+		glDisable(GL_COLOR_MATERIAL);
 
-		if(mesh->HasVertexColors(0))
-			glEnable(GL_COLOR_MATERIAL);
-		else
-			glDisable(GL_COLOR_MATERIAL);
-
-		//Get the polygons from each mesh and draw them
-		for (int k = 0; k < mesh->mNumFaces; k++)
+	int count = 0;
+	for (int k = 0; k < mesh->mNumBones; k++)
+	{
+		aiString nameMesh = mesh->mBones[k]->mName;
+		aiMatrix4x4 offsetMatrix = mesh->mBones[k]->mOffsetMatrix;
+		int eachBoneVertexNum=mesh->mBones[k]->mNumWeights;
+		int eachBoneFacesNum = eachBoneVertexNum / 3;
+		aiNode *node = sc->mRootNode->FindNode(nameMesh);
+		aiMatrix4x4 m = node->mTransformation;//取当前bone名字对应点的mTransformation
+		aiFace* face;
+		for (int i = count; i < count + eachBoneFacesNum; i++)
 		{
-			if (0 <= k && k <= 3)
-			{
-				aiNode *node = sc->mRootNode->FindNode("Shoulder");
-				m = node->mTransformation;
-				for (int j = 0; j < mesh->mNumBones; j++)
-				{
-					aiString nameMesh = mesh->mBones[j]->mName;
-					aiString *pString = new aiString("Shoulder");
-					//aiString nameNode =nd->mName;
-					if (nameMesh.operator==(*pString))
-					{
-						offsetMatrix = mesh->mBones[j]->mOffsetMatrix;
-					}
-				}
-
-			}
-			else if (4 <= k && k <= 7)
-			{
-				aiNode *node = sc->mRootNode->FindNode("Elbow");
-				m = node->mTransformation;
-				for (int j = 0; j < mesh->mNumBones; j++)
-				{
-					aiString nameMesh = mesh->mBones[j]->mName;
-					aiString *pString = new aiString("Elbow");
-					//aiString nameNode =nd->mName;
-					if (nameMesh.operator==(*pString))
-					{
-						offsetMatrix = mesh->mBones[j]->mOffsetMatrix;
-					}
-				}
-			}
-			else if (8 <= k && k <= 11)
-			{
-				aiNode *node = sc->mRootNode->FindNode("Wrist");
-				m = node->mTransformation;
-				for (int j = 0; j < mesh->mNumBones; j++)
-				{
-					aiString nameMesh = mesh->mBones[j]->mName;
-					aiString *pString = new aiString("Wrist");
-					//aiString nameNode =nd->mName;
-					if (nameMesh.operator==(*pString))
-					{
-						offsetMatrix = mesh->mBones[j]->mOffsetMatrix;
-					}
-				}
-			}
-			else if (12 <= k && k <= 19)
-			{
-				aiNode *node = sc->mRootNode->FindNode("EndSite_Wrist");
-				m = node->mTransformation;
-				for (int j = 0; j < mesh->mNumBones; j++)
-				{
-					aiString nameMesh = mesh->mBones[j]->mName;
-					aiString *pString = new aiString("EndSite_Wrist");
-					//aiString nameNode =nd->mName;
-					if (nameMesh.operator==(*pString))
-					{
-						offsetMatrix = mesh->mBones[j]->mOffsetMatrix;
-					}
-				}
-			}
-
-			
-			face = &mesh->mFaces[k];
+			face = &mesh->mFaces[i];
 			GLenum face_mode;
 
-			switch(face->mNumIndices)
+			switch (face->mNumIndices)
 			{
-				case 1: face_mode = GL_POINTS; break;
-				case 2: face_mode = GL_LINES; break;
-				case 3: face_mode = GL_TRIANGLES; break;
-				default: face_mode = GL_POLYGON; break;
+			case 1: face_mode = GL_POINTS; break;
+			case 2: face_mode = GL_LINES; break;
+			case 3: face_mode = GL_TRIANGLES; break;
+			default: face_mode = GL_POLYGON; break;
 			}
 
 			glBegin(face_mode);
 
-			for(int i = 0; i < face->mNumIndices; i++) 
+			for (int i = 0; i < face->mNumIndices; i++)
 			{
 				int index = face->mIndices[i];
-				if(mesh->HasVertexColors(0))
+				if (mesh->HasVertexColors(0))
 				{
 					glEnable(GL_COLOR_MATERIAL);
 					glColorMaterial(GL_FRONT_AND_BACK, GL_DIFFUSE);
@@ -236,7 +176,7 @@ void render (const aiScene* sc, const aiNode* nd)
 				}
 				else
 					glDisable(GL_COLOR_MATERIAL);
-				if(mesh->HasNormals()) 
+				if (mesh->HasNormals())
 					glNormal3fv(&mesh->mNormals[index].x);
 				float xx = mesh->mVertices[index].x;
 				float yy = mesh->mVertices[index].y;
@@ -248,43 +188,32 @@ void render (const aiScene* sc, const aiNode* nd)
 				float zNew = xx*mNew.c1 + yy*mNew.c2 + zz*mNew.c3 + mNew.c4;
 
 				GLfloat posArr[] = { xNew, yNew, zNew };
-				
+
 				//m.Translation(posn, m);
 				//aiVector3D *bb = &mesh->mVertices[index];
 				glVertex3fv(posArr);
 			}
 			glEnd();
 		}
+		count += eachBoneFacesNum;
 	}
-	// Draw all children
-	//for (int i = 0; i < nd->mNumChildren; i++)
-		//render(sc, nd->mChildren[i]);
-	
-	//glPopMatrix();
 }
 
-//--------------------OpenGL initialization------------------------
-void initialise()
+
+
+
+void special(int key, int x, int y)
 {
-    glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
-	glEnable(GL_LIGHTING);
-	glEnable(GL_LIGHT0);
-	glEnable(GL_DEPTH_TEST);
-	glEnable(GL_NORMALIZE);
-	glLightModeli(GL_LIGHT_MODEL_TWO_SIDE, GL_TRUE);
-	glColorMaterial(GL_FRONT_AND_BACK, GL_DIFFUSE);
-	fileout.open("sceneInfo.txt", ios::out);
-	loadModel(fileName);		//<<<-------------Specify input file name here  --------------
-	glMatrixMode(GL_PROJECTION);
-	glLoadIdentity();
+	if (key == GLUT_KEY_LEFT) angle -= 1;
+	else if (key == GLUT_KEY_RIGHT) angle += 1;
+	if (key == GLUT_KEY_DOWN) rot_x += 1;
+	else if (key == GLUT_KEY_UP) rot_x -= 1;
 
-	gluPerspective(45, 1, 1.0, 1000.0);
-	//glFrustum(-5.0, 5.0, -5.0, 5.0, 5.0, 1000.0);   //Camera Frustum
+	glutPostRedisplay();
 }
-
 
 void update(int value)
-{	
+{
 	tick++;
 	if (tick > TicksPerSec) tick = 0;
 	glutPostRedisplay();
@@ -308,12 +237,11 @@ void drawFloor()
 	}
 }
 
-
 //----Keyboard callback to toggle initial model orientation---
 void keyboard(unsigned char key, int x, int y)
 {
-	if(key == '1') modelRotn = !modelRotn;   //Enable/disable initial model rotation
-	
+	if (key == '1') modelRotn = !modelRotn;   //Enable/disable initial model rotation
+
 	else if (key == 'w')
 	{  //Move backward
 		eye_x -= 0.1*sin(angle);
@@ -329,6 +257,26 @@ void keyboard(unsigned char key, int x, int y)
 	look_z = eye_z - 100 * cos(angle);
 	glutPostRedisplay();
 }
+
+//--------------------OpenGL initialization------------------------
+void initialise()
+{
+    glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
+	glEnable(GL_LIGHTING);
+	glEnable(GL_LIGHT0);
+	glEnable(GL_DEPTH_TEST);
+	glEnable(GL_NORMALIZE);
+	glLightModeli(GL_LIGHT_MODEL_TWO_SIDE, GL_TRUE);
+	glColorMaterial(GL_FRONT_AND_BACK, GL_DIFFUSE);
+	fileout.open("sceneInfo.txt", ios::out);
+	loadModel(fileName);		//<<<-------------Specify input file name here  --------------
+	glMatrixMode(GL_PROJECTION);
+	glLoadIdentity();
+
+	gluPerspective(45, 1, 1.0, 1000.0);
+	//glFrustum(-5.0, 5.0, -5.0, 5.0, 5.0, 1000.0);   //Camera Frustum
+}
+
 
 //------The main display function---------
 //----The model is first drawn using a display list so that all GL commands are
@@ -367,8 +315,8 @@ void display()
             // now begin at the root node of the imported data and traverse
             // the scenegraph by multiplying subsequent local transforms
             // together on GL's matrix stack.
-		   motion(scene, tick);//先把变换后的坐标点给替换了
-	       render(scene, scene->mRootNode);//没改变该函数
+		   motion(scene, tick, scene->mRootNode);//先把变换后的坐标点给替换了
+	       render(scene);//没改变该函数
 
 	glutSwapBuffers();
 }
