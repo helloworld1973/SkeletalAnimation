@@ -40,7 +40,7 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="ModelLoader.cpp">
+    <ClCompile Include="CharacterModelLoader.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>

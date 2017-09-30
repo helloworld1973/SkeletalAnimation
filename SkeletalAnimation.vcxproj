@@ -156,7 +156,7 @@
     <ClInclude Include="assimp_extras.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="ModelLoader.cpp" />
+    <ClCompile Include="CharacterModelLoader.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
