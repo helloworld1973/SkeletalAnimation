@@ -20,23 +20,24 @@ using namespace std;
 #include <assimp/cimport.h>
 #include <assimp/types.h>
 #include <assimp/scene.h>
-
+#include <map>
 #include <assimp/postprocess.h>
 #include "assimp_extras.h"
 
+const int TicksPerSec=219;//change
+const char* fileName = "Dance.bvh";//change
 
 const aiScene* scene = NULL;
 float angle = 0.0;
 float rot_x = 0.0;
 float eye_x, eye_z, look_x, look_z = -1.;
-const int TicksPerSec = 219;//change
-const char* fileName = "Dance.bvh";//change
-
+aiString *p = new aiString[100];
+aiMatrix4x4 *q = new aiMatrix4x4[100];
+int flagPQ = 0;
 int tick = 0;
 
 
 aiVector3D scene_min, scene_max, scene_center;
-bool modelRotn = true;
 ofstream fileout;
 
 bool loadModel(const char* fileName)
@@ -51,6 +52,17 @@ bool loadModel(const char* fileName)
 	return true;
 }
 
+
+void storeEndSiteInitTransformation(aiNode* nd)
+{
+	aiString name = nd->mName;
+	aiMatrix4x4 mTan = nd->mTransformation;
+	p[flagPQ] = name;
+	q[flagPQ] = mTan;
+	flagPQ++;
+	for (int i = 0; i < nd->mNumChildren; i++)
+		storeEndSiteInitTransformation(nd->mChildren[i]);
+}
 
 void motion(const aiScene* sc, int tick, aiNode* nd)
 {
@@ -83,7 +95,6 @@ void motion(const aiScene* sc, int tick, aiNode* nd)
 			chnl = anim->mChannels[i];
 			flag = 1;
 			break;
-			
 		}
 	}
 	
@@ -109,7 +120,6 @@ void motion(const aiScene* sc, int tick, aiNode* nd)
 		}
 
 		//取出关节的Transformation 计算转换和再还回去
-
 		aiMatrix4x4 matPos = nd->mTransformation;//原始点
 		matPos.Translation(posn, matPos);//将关节处的点translation
 		aiMatrix3x3 matRon3 = rotn.GetMatrix();
@@ -118,8 +128,16 @@ void motion(const aiScene* sc, int tick, aiNode* nd)
 	}
 	else if (flag == 0)
 	{
-		aiMatrix4x4 matPos = nd->mTransformation;//原始点
-		nd->mTransformation = mTransformationParent*matPos;//这部分还有些问题
+		for (int k = 0; k < 100; k++)
+		{
+			if (p[k] == ndName)
+			{
+				aiMatrix4x4 mTan = q[k];
+				nd->mTransformation = mTransformationParent*mTan;
+				break;
+			}
+		}
+				
 	}
 
 
@@ -217,7 +235,7 @@ void update(int value)
 	tick++;
 	if (tick > TicksPerSec) tick = 0;
 	glutPostRedisplay();
-	glutTimerFunc(100, update, 1);
+	glutTimerFunc(50, update, 1);
 }
 
 void drawFloor()
@@ -240,9 +258,7 @@ void drawFloor()
 //----Keyboard callback to toggle initial model orientation---
 void keyboard(unsigned char key, int x, int y)
 {
-	if (key == '1') modelRotn = !modelRotn;   //Enable/disable initial model rotation
-
-	else if (key == 'w')
+	if (key == 'w')
 	{  //Move backward
 		eye_x -= 0.1*sin(angle);
 		eye_z += 0.1*cos(angle);
@@ -270,9 +286,10 @@ void initialise()
 	glColorMaterial(GL_FRONT_AND_BACK, GL_DIFFUSE);
 	fileout.open("sceneInfo.txt", ios::out);
 	loadModel(fileName);		//<<<-------------Specify input file name here  --------------
+	storeEndSiteInitTransformation(scene->mRootNode);
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
-
+	
 	gluPerspective(45, 1, 1.0, 1000.0);
 	//glFrustum(-5.0, 5.0, -5.0, 5.0, 5.0, 1000.0);   //Camera Frustum
 }
@@ -295,8 +312,6 @@ void display()
 	glRotatef(angle, 0.f, 1.f, 0.f);  //Continuous rotation about the y-axis
 	
 	drawFloor();
-	
-	if(modelRotn) glRotatef(-90, 1, 0, 0);		  //First, rotate the model about x-axis if needed.
 
 	glColor3f(1., 0.78, 0.06);
 	// scale the whole asset to fit into our view frustum 
@@ -334,7 +349,7 @@ int main(int argc, char** argv)
 
 	initialise();
 	glutDisplayFunc(display);
-	glutTimerFunc(100, update, 1);//glutTimerFunc(50, updateAnimation, 1);
+	glutTimerFunc(50, update, 1);//glutTimerFunc(50, updateAnimation, 1);
 	glutKeyboardFunc(keyboard);
 	glutSpecialFunc(special);
 	glutMainLoop();
