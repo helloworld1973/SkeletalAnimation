@@ -18,6 +18,15 @@
       <Platform>x64</Platform>
     </ProjectConfiguration>
   </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="assimp_extras.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="wuson.x" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="CharacterModelLoader.cpp" />
+  </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{1C770BF3-FA31-4DC2-9FFE-715E17E1E688}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
@@ -144,20 +153,6 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
   </ItemDefinitionGroup>
-  <ItemGroup>
-    <None Include="01_01.bvh" />
-    <None Include="02_01.bvh" />
-    <None Include="Dance.bvh" />
-    <None Include="dwarf.x" />
-    <None Include="Test.bvh" />
-    <None Include="wuson.x" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="assimp_extras.h" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClCompile Include="CharacterModelLoader.cpp" />
-  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

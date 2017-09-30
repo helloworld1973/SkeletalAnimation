@@ -27,7 +27,6 @@ aiMatrix4x4 *q = new aiMatrix4x4[100];
 int flagPQ = 0;
 int tick = 0;
 
-
 aiVector3D scene_min, scene_max, scene_center;
 ofstream fileout;
 
@@ -43,7 +42,6 @@ bool loadModel(const char* fileName)
 	return true;
 }
 
-
 void storeEndSiteInitTransformation(aiNode* nd)
 {
 	aiString name = nd->mName;
@@ -58,10 +56,10 @@ void storeEndSiteInitTransformation(aiNode* nd)
 aiVector3D chooseADposKey(int tick, aiNodeAnim* chnl)
 {
 	int numPositonKeys = chnl->mNumPositionKeys;
-	for (int i = 0; i < numPositonKeys-1; i++)
+	for (int i = 0; i < numPositonKeys - 1; i++)
 	{
 		int lastTime = (int)chnl->mPositionKeys[i].mTime;
-		int nowTime = (int)chnl->mPositionKeys[i+1].mTime;
+		int nowTime = (int)chnl->mPositionKeys[i + 1].mTime;
 		if (lastTime <= tick && tick <= nowTime)
 		{
 			aiVector3D	posn = chnl->mPositionKeys[lastTime].mValue;
@@ -83,7 +81,7 @@ aiQuaternion chooseADrotKey(int tick, aiNodeAnim* chnl)
 		}
 	}
 }
-void motion(const aiScene* sc, int tick, aiNode* nd)
+void motion(const aiScene* sc, int tick, aiNode* nd)//change node's mTransmition
 {
 	aiMatrix4x4 mTransformationParent;
 
@@ -104,7 +102,7 @@ void motion(const aiScene* sc, int tick, aiNode* nd)
 	}
 
 	aiAnimation* anim = new aiAnimation;
-	anim = sc->mAnimations[0];
+	anim = sc->mAnimations[0];//here can change 0:Wuson_Run  1:Wuson_Walk  2:Wuson_Bind
 
 	for (int i = 0; i < anim->mNumChannels; i++)
 	{
@@ -116,35 +114,73 @@ void motion(const aiScene* sc, int tick, aiNode* nd)
 		}
 	}
 
-		aiVector3D posn; aiQuaternion rotn;
-		int numPositonKeys = chnl->mNumPositionKeys;
-		if (numPositonKeys > 1)
-		{
-			posn = chooseADposKey(tick,chnl);
-		}
-		else {
-			posn = chnl->mPositionKeys[0].mValue;
-		}
-		int numRotationKeys = chnl->mNumRotationKeys;
-		if (numRotationKeys > 1)
-		{
-			rotn = chooseADrotKey(tick, chnl);
-		}
-		else
-		{
-			rotn = chnl->mRotationKeys[0].mValue;
-		}
+	aiVector3D posn; aiQuaternion rotn;
+	int numPositonKeys = chnl->mNumPositionKeys;
+	if (numPositonKeys > 1)
+	{
+		posn = chooseADposKey(tick, chnl);
+	}
+	else {
+		posn = chnl->mPositionKeys[0].mValue;
+	}
+	int numRotationKeys = chnl->mNumRotationKeys;
+	if (numRotationKeys > 1)
+	{
+		rotn = chooseADrotKey(tick, chnl);
+	}
+	else
+	{
+		rotn = chnl->mRotationKeys[0].mValue;
+	}
 
-		//取出关节的Transformation 计算转换和再还回去
-		aiMatrix4x4 matPos = nd->mTransformation;//原始点
-		matPos.Translation(posn, matPos);//将关节处的点translation
-		aiMatrix3x3 matRon3 = rotn.GetMatrix();
-		aiMatrix4x4 matRon = aiMatrix4x4(matRon3);//rotation
-		nd->mTransformation = mTransformationParent*matPos*matRon;
+	//取出关节的Transformation 计算转换和再还回去
+	aiMatrix4x4 matPos = nd->mTransformation;//原始点
+	matPos.Translation(posn, matPos);//将关节处的点translation
+	aiMatrix3x3 matRon3 = rotn.GetMatrix();
+	aiMatrix4x4 matRon = aiMatrix4x4(matRon3);//rotation
+	nd->mTransformation = mTransformationParent*matPos*matRon;
 
-		for (int i = 0; i < nd->mNumChildren; i++)
-			motion(sc, tick, nd->mChildren[i]);
+	for (int i = 0; i < nd->mNumChildren; i++)
+		motion(sc, tick, nd->mChildren[i]);
 }
+
+
+aiMatrix4x4 calIndexPointsInfluenceTotal(const aiScene* sc,int index, aiMesh* mesh)
+{
+	aiMatrix4x4 mNew;
+	for (int k = 0; k < mesh->mNumBones; k++)
+	{
+		int eachBoneVertexNum = mesh->mBones[k]->mNumWeights;
+		for (int m = 0; m < eachBoneVertexNum; m++)
+		{
+			int boneIndex=mesh->mBones[k]->mWeights[m].mVertexId;
+			float boneIndexWeight = mesh->mBones[k]->mWeights[m].mWeight;
+			if (index == boneIndex)
+			{
+				aiMatrix4x4 offsetMatrix = mesh->mBones[k]->mOffsetMatrix;
+				aiString nameMesh = mesh->mBones[k]->mName;
+				aiNode *node = sc->mRootNode->FindNode(nameMesh);
+				aiMatrix4x4 m = node->mTransformation;
+				aiMatrix4x4 mNewTemp = m*offsetMatrix;
+				mNewTemp = { boneIndexWeight*mNewTemp.a1,boneIndexWeight*mNewTemp.a2,boneIndexWeight*mNewTemp.a3,boneIndexWeight*mNewTemp.a4,
+							 boneIndexWeight*mNewTemp.b1,boneIndexWeight*mNewTemp.b2,boneIndexWeight*mNewTemp.b3,boneIndexWeight*mNewTemp.b4,
+							 boneIndexWeight*mNewTemp.c1,boneIndexWeight*mNewTemp.c2,boneIndexWeight*mNewTemp.c3,boneIndexWeight*mNewTemp.c4,
+							 boneIndexWeight*mNewTemp.d1,boneIndexWeight*mNewTemp.d2,boneIndexWeight*mNewTemp.d3,boneIndexWeight*mNewTemp.d4,
+				           };
+
+					mNew = { mNewTemp.a1+ mNew.a1,mNewTemp.a2+ mNew.a2,mNewTemp.a3+ mNew.a3,mNewTemp.a4+ mNew.a4,
+						     mNewTemp.b1 + mNew.b1,mNewTemp.b2 + mNew.b2,mNewTemp.b3 + mNew.b3,mNewTemp.b4 + mNew.b4,
+						     mNewTemp.c1 + mNew.c1,mNewTemp.c2 + mNew.c2,mNewTemp.c3 + mNew.c3,mNewTemp.c4 + mNew.c4,
+						     mNewTemp.d1 + mNew.d1,mNewTemp.d2 + mNew.d2,mNewTemp.d3 + mNew.d3,mNewTemp.d4 + mNew.d4,
+					        };
+				break;
+			}
+			
+		}
+	}
+	return mNew;
+}
+
 
 void render(const aiScene* sc)
 {
@@ -158,66 +194,51 @@ void render(const aiScene* sc)
 		glEnable(GL_COLOR_MATERIAL);
 	else
 		glDisable(GL_COLOR_MATERIAL);
-
-	int count = 0;
-	for (int k = 0; k < mesh->mNumBones; k++)
+	
+	aiFace* face;
+	for (int k = 0; k < mesh->mNumFaces; k++)
 	{
-		aiString nameMesh = mesh->mBones[k]->mName;
-		aiMatrix4x4 offsetMatrix = mesh->mBones[k]->mOffsetMatrix;
-		int eachBoneVertexNum = mesh->mBones[k]->mNumWeights;
-		int eachBoneFacesNum = eachBoneVertexNum / 3;
-		aiNode *node = sc->mRootNode->FindNode(nameMesh);
-		aiMatrix4x4 m = node->mTransformation;//取当前bone名字对应点的mTransformation
-		aiFace* face;
-		for (int i = count; i < count + eachBoneFacesNum; i++)
+		face = &mesh->mFaces[k];
+		GLenum face_mode;
+		switch (face->mNumIndices)
 		{
-			face = &mesh->mFaces[i];
-			GLenum face_mode;
-
-			switch (face->mNumIndices)
-			{
-			case 1: face_mode = GL_POINTS; break;
-			case 2: face_mode = GL_LINES; break;
-			case 3: face_mode = GL_TRIANGLES; break;
-			default: face_mode = GL_POLYGON; break;
-			}
-
-			glBegin(face_mode);
-
-			for (int i = 0; i < face->mNumIndices; i++)
-			{
-				int index = face->mIndices[i];
-				if (mesh->HasVertexColors(0))
-				{
-					glEnable(GL_COLOR_MATERIAL);
-					glColorMaterial(GL_FRONT_AND_BACK, GL_DIFFUSE);
-					glColor4fv((GLfloat*)&mesh->mColors[0][index]);
-				}
-				else
-					glDisable(GL_COLOR_MATERIAL);
-				if (mesh->HasNormals())
-					glNormal3fv(&mesh->mNormals[index].x);
-				float xx = mesh->mVertices[index].x;
-				float yy = mesh->mVertices[index].y;
-				float zz = mesh->mVertices[index].z;
-				GLfloat temp[] = { xx, yy, zz };
-				aiMatrix4x4 mNew = m*offsetMatrix;
-				float xNew = xx*mNew.a1 + yy*mNew.a2 + zz*mNew.a3 + mNew.a4;
-				float yNew = xx*mNew.b1 + yy*mNew.b2 + zz*mNew.b3 + mNew.b4;
-				float zNew = xx*mNew.c1 + yy*mNew.c2 + zz*mNew.c3 + mNew.c4;
-
-				GLfloat posArr[] = { xNew, yNew, zNew };
-
-				//m.Translation(posn, m);
-				//aiVector3D *bb = &mesh->mVertices[index];
-				glVertex3fv(posArr);
-			}
-			glEnd();
+		case 1: face_mode = GL_POINTS; break;
+		case 2: face_mode = GL_LINES; break;
+		case 3: face_mode = GL_TRIANGLES; break;
+		default: face_mode = GL_POLYGON; break;
 		}
-		count += eachBoneFacesNum;
+
+		glBegin(face_mode);
+		for (int i = 0; i < face->mNumIndices; i++) 
+		{
+			int index = face->mIndices[i];
+
+			if (mesh->HasVertexColors(0))
+			{
+				glEnable(GL_COLOR_MATERIAL);
+				glColorMaterial(GL_FRONT_AND_BACK, GL_DIFFUSE);
+				glColor4fv((GLfloat*)&mesh->mColors[0][index]);
+			}
+			else
+				glDisable(GL_COLOR_MATERIAL);
+			if (mesh->HasNormals())
+				glNormal3fv(&mesh->mNormals[index].x);
+			float xx = mesh->mVertices[index].x;
+			float yy = mesh->mVertices[index].y;
+			float zz = mesh->mVertices[index].z;
+			GLfloat temp[] = { xx, yy, zz };
+			aiMatrix4x4 mNew = calIndexPointsInfluenceTotal(sc, index, mesh);
+			float xNew = xx*mNew.a1 + yy*mNew.a2 + zz*mNew.a3 + mNew.a4;
+			float yNew = xx*mNew.b1 + yy*mNew.b2 + zz*mNew.b3 + mNew.b4;
+			float zNew = xx*mNew.c1 + yy*mNew.c2 + zz*mNew.c3 + mNew.c4;
+
+			GLfloat posArr[] = { xNew, yNew, zNew };
+
+			glVertex3fv(posArr);
+		}
+		glEnd();
 	}
 }
-
 
 
 
@@ -287,7 +308,7 @@ void initialise()
 	glColorMaterial(GL_FRONT_AND_BACK, GL_DIFFUSE);
 	fileout.open("sceneInfo.txt", ios::out);
 	loadModel(fileName);		//<<<-------------Specify input file name here  --------------
-	//storeEndSiteInitTransformation(scene->mRootNode);
+								//storeEndSiteInitTransformation(scene->mRootNode);
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
 
@@ -358,4 +379,3 @@ int main(int argc, char** argv)
 
 	aiReleaseImport(scene);
 }
-
