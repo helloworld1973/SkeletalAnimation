@@ -15,16 +15,14 @@ using namespace std;
 #include <assimp/postprocess.h>
 #include "assimp_extras.h"
 
-const int TicksPerSec = 4641;//change
+const int TicksPerSec = 1000;//change 4640
 const char* fileName = "wuson.x";//change
+const int chooseAnim = 0;//here can change 0:Wuson_Run  1:Wuson_Walk  2:Wuson_Bind
 
 const aiScene* scene = NULL;
 float angle = 0.0;
 float rot_x = 0.0;
 float eye_x, eye_z, look_x, look_z = -1.;
-aiString *p = new aiString[100];
-aiMatrix4x4 *q = new aiMatrix4x4[100];
-int flagPQ = 0;
 int tick = 0;
 
 aiVector3D scene_min, scene_max, scene_center;
@@ -42,17 +40,6 @@ bool loadModel(const char* fileName)
 	return true;
 }
 
-void storeEndSiteInitTransformation(aiNode* nd)
-{
-	aiString name = nd->mName;
-	aiMatrix4x4 mTan = nd->mTransformation;
-	p[flagPQ] = name;
-	q[flagPQ] = mTan;
-	flagPQ++;
-	for (int i = 0; i < nd->mNumChildren; i++)
-		storeEndSiteInitTransformation(nd->mChildren[i]);
-}
-
 aiVector3D chooseADposKey(int tick, aiNodeAnim* chnl)
 {
 	int numPositonKeys = chnl->mNumPositionKeys;
@@ -62,7 +49,15 @@ aiVector3D chooseADposKey(int tick, aiNodeAnim* chnl)
 		int nowTime = (int)chnl->mPositionKeys[i + 1].mTime;
 		if (lastTime <= tick && tick <= nowTime)
 		{
-			aiVector3D	posn = chnl->mPositionKeys[lastTime].mValue;
+//			aiVector3D	posn1 = chnl->mPositionKeys[lastTime].mValue;
+//			aiVector3D	posn2 = chnl->mPositionKeys[nowTime].mValue;
+//			float factor = (tick - lastTime) / (nowTime - lastTime);
+//
+//			aiVector3D	posn = { posn1.x+(posn2.x- posn1.x)/factor,  
+//				                 posn1.y + (posn2.y - posn1.y)/factor,
+//				                 posn1.z + (posn2.z - posn1.z)/factor 
+//			                    };
+			aiVector3D posn= chnl->mPositionKeys[lastTime].mValue;
 			return posn;
 		}
 	}
@@ -76,8 +71,13 @@ aiQuaternion chooseADrotKey(int tick, aiNodeAnim* chnl)
 		int nowTime = (int)chnl->mRotationKeys[i + 1].mTime;
 		if (lastTime <= tick && tick <= nowTime)
 		{
-			aiQuaternion rot = chnl->mRotationKeys[lastTime].mValue;
-			return rot;
+			aiQuaternion rotn1= chnl->mRotationKeys[lastTime].mValue;
+			aiQuaternion rotn2 = chnl->mRotationKeys[nowTime].mValue;
+			double factor = (tick - lastTime) / (nowTime - lastTime);
+
+			aiQuaternion rotn;
+			rotn.Interpolate(rotn,rotn1,rotn2,factor);
+			return rotn;
 		}
 	}
 }
@@ -91,25 +91,24 @@ void motion(const aiScene* sc, int tick, aiNode* nd)//change node's mTransmition
 
 	if (ndParent == NULL)
 	{
-		mTransformationParent = { 1.0, 0.0, 0.0, 0.0,
-			0.0, 1.0, 0.0, 0.0,
-			0.0, 0.0, 1.0, 0.0,
-			0.0, 0.0, 0.0, 1.0 };
+		mTransformationParent =   { 1.0, 0.0, 0.0, 0.0,
+									0.0, 1.0, 0.0, 0.0,
+									0.0, 0.0, 1.0, 0.0,
+									0.0, 0.0, 0.0, 1.0 };
 	}
 	else
 	{
 		mTransformationParent = ndParent->mTransformation;
 	}
 
-	aiAnimation* anim = new aiAnimation;
-	anim = sc->mAnimations[0];//here can change 0:Wuson_Run  1:Wuson_Walk  2:Wuson_Bind
+	aiAnimation* anim;
+	anim = sc->mAnimations[chooseAnim];
 
 	for (int i = 0; i < anim->mNumChannels; i++)
 	{
 		if (anim->mChannels[i]->mNodeName.operator==(ndName))
 		{
 			chnl = anim->mChannels[i];
-
 			break;
 		}
 	}
@@ -147,7 +146,12 @@ void motion(const aiScene* sc, int tick, aiNode* nd)//change node's mTransmition
 
 aiMatrix4x4 calIndexPointsInfluenceTotal(const aiScene* sc,int index, aiMesh* mesh)
 {
-	aiMatrix4x4 mNew;
+	aiMatrix4x4 mNew = {0.0,0.0,0.0,0.0,
+						0.0,0.0,0.0,0.0,
+						0.0,0.0,0.0,0.0,
+						0.0,0.0,0.0,0.0,
+	                    };
+	double totalWeight = 0;
 	for (int k = 0; k < mesh->mNumBones; k++)
 	{
 		int eachBoneVertexNum = mesh->mBones[k]->mNumWeights;
@@ -167,17 +171,18 @@ aiMatrix4x4 calIndexPointsInfluenceTotal(const aiScene* sc,int index, aiMesh* me
 							 boneIndexWeight*mNewTemp.c1,boneIndexWeight*mNewTemp.c2,boneIndexWeight*mNewTemp.c3,boneIndexWeight*mNewTemp.c4,
 							 boneIndexWeight*mNewTemp.d1,boneIndexWeight*mNewTemp.d2,boneIndexWeight*mNewTemp.d3,boneIndexWeight*mNewTemp.d4,
 				           };
-
+				
 					mNew = { mNewTemp.a1+ mNew.a1,mNewTemp.a2+ mNew.a2,mNewTemp.a3+ mNew.a3,mNewTemp.a4+ mNew.a4,
 						     mNewTemp.b1 + mNew.b1,mNewTemp.b2 + mNew.b2,mNewTemp.b3 + mNew.b3,mNewTemp.b4 + mNew.b4,
 						     mNewTemp.c1 + mNew.c1,mNewTemp.c2 + mNew.c2,mNewTemp.c3 + mNew.c3,mNewTemp.c4 + mNew.c4,
 						     mNewTemp.d1 + mNew.d1,mNewTemp.d2 + mNew.d2,mNewTemp.d3 + mNew.d3,mNewTemp.d4 + mNew.d4,
 					        };
+					totalWeight += boneIndexWeight;
 				break;
-			}
-			
+			}		
 		}
 	}
+	totalWeight;
 	return mNew;
 }
 
@@ -240,8 +245,6 @@ void render(const aiScene* sc)
 	}
 }
 
-
-
 void special(int key, int x, int y)
 {
 	if (key == GLUT_KEY_LEFT) angle -= 1;
@@ -257,7 +260,7 @@ void update(int value)
 	tick++;
 	if (tick > TicksPerSec) tick = 0;
 	glutPostRedisplay();
-	glutTimerFunc(50, update, 1);
+	glutTimerFunc(5, update, 1);
 }
 
 void drawFloor()
@@ -277,7 +280,6 @@ void drawFloor()
 	}
 }
 
-//----Keyboard callback to toggle initial model orientation---
 void keyboard(unsigned char key, int x, int y)
 {
 	if (key == 'w')
@@ -296,7 +298,6 @@ void keyboard(unsigned char key, int x, int y)
 	glutPostRedisplay();
 }
 
-//--------------------OpenGL initialization------------------------
 void initialise()
 {
 	glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
@@ -307,8 +308,7 @@ void initialise()
 	glLightModeli(GL_LIGHT_MODEL_TWO_SIDE, GL_TRUE);
 	glColorMaterial(GL_FRONT_AND_BACK, GL_DIFFUSE);
 	fileout.open("sceneInfo.txt", ios::out);
-	loadModel(fileName);		//<<<-------------Specify input file name here  --------------
-								//storeEndSiteInitTransformation(scene->mRootNode);
+	loadModel(fileName);		
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
 
@@ -316,10 +316,6 @@ void initialise()
 	//glFrustum(-5.0, 5.0, -5.0, 5.0, 5.0, 1000.0);   //Camera Frustum
 }
 
-
-//------The main display function---------
-//----The model is first drawn using a display list so that all GL commands are
-//    stored for subsequent display updates.
 void display()
 {
 	float pos[4] = { 50, 50, 50, 1 };
@@ -327,7 +323,7 @@ void display()
 
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
-	gluLookAt(eye_x, 3, eye_z, look_x, -3, look_z, 0, 1, 0);
+	gluLookAt(0, 1, 4, 0, 0, -3, 0, 1, 0);//gluLookAt(eye_x, 3, eye_z, look_x, -3, look_z, 0, 1, 0);
 	glLightfv(GL_LIGHT0, GL_POSITION, pos);
 
 	glRotatef(rot_x, 1, 0, 0);
@@ -372,7 +368,7 @@ int main(int argc, char** argv)
 
 	initialise();
 	glutDisplayFunc(display);
-	glutTimerFunc(50, update, 1);//glutTimerFunc(50, updateAnimation, 1);
+	glutTimerFunc(5, update, 1);//glutTimerFunc(50, updateAnimation, 1);
 	glutKeyboardFunc(keyboard);
 	glutSpecialFunc(special);
 	glutMainLoop();
