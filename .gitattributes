@@ -1,2 +1,4 @@
 # Auto detect text files and perform LF normalization
-* text=c++
+*.bvh linguist-language=C++
+*.x linguist-language=C++
+*.txt linguist-language=C++
