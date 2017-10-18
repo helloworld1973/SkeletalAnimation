@@ -246,6 +246,24 @@ void drawFloor()
 	}
 }
 
+void drawPlate()
+{
+	glDisable(GL_LIGHTING);			//Disable lighting when drawing floor.
+
+	glColor3f(0.7, 0.5, 0.);			//Floor colour
+
+	for (float i = -2; i <= 2; i++)
+	{
+		glBegin(GL_QUADS);			//A set of grid lines on the xz-plane
+		glVertex3f(-2, 0, i);
+		glVertex3f(2, 0, i);
+		glVertex3f(i, 0, -2);
+		glVertex3f(i, 0, 2);
+		glEnd();
+	}
+}
+
+
 //----Keyboard callback to toggle initial model orientation---
 void keyboard(unsigned char key, int x, int y)
 {
@@ -303,6 +321,7 @@ void display()
 	glRotatef(angle, 0.f, 1.f, 0.f);  //Continuous rotation about the y-axis
 	
 	drawFloor();
+	drawPlate();
 
 	glColor3f(1., 0.78, 0.06);
 	// scale the whole asset to fit into our view frustum 
