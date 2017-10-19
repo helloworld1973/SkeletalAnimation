@@ -4,6 +4,7 @@
 
 #include <iostream>
 #include <fstream>
+#include<vector>
 #include <GL/freeglut.h>
 
 using namespace std;
@@ -24,9 +25,10 @@ float angle = 0.0;
 float rot_x = 0.0;
 float eye_x, eye_z, look_x, look_z = -1.;
 int tick = 0;
-
 aiVector3D scene_min, scene_max, scene_center;
 ofstream fileout;
+
+vector <aiMatrix4x4> allVertexAfterCalIndexPointsInfluence;
 
 bool loadModel(const char* fileName)
 {
@@ -39,6 +41,78 @@ bool loadModel(const char* fileName)
 	get_bounding_box(scene, &scene_min, &scene_max);
 	return true;
 }
+
+aiMatrix4x4 calIndexPointsInfluenceTotal(const aiScene* sc, int index, aiMesh* mesh)
+{
+	aiMatrix4x4 mNew = { 0.0,0.0,0.0,0.0,
+		0.0,0.0,0.0,0.0,
+		0.0,0.0,0.0,0.0,
+		0.0,0.0,0.0,0.0,
+	};
+	double totalWeight = 0;
+
+	for (int k = 0; k < mesh->mNumBones; k++)
+	{
+
+		int eachBoneVertexNum = mesh->mBones[k]->mNumWeights;
+		for (int m = 0; m < eachBoneVertexNum; m++)
+		{
+			int vertexId = mesh->mBones[k]->mWeights[m].mVertexId;
+			float vertexIdWeight = mesh->mBones[k]->mWeights[m].mWeight;
+			//if(vertexIdWeight==1.0)
+			if (index == vertexId && vertexIdWeight == 1.0)
+			{
+				aiMatrix4x4 offsetMatrix = mesh->mBones[k]->mOffsetMatrix;
+				aiString nameMesh = mesh->mBones[k]->mName;
+				aiNode *node = sc->mRootNode->FindNode(nameMesh);
+				aiMatrix4x4 m = node->mTransformation;
+				aiMatrix4x4 mNewTemp = m*offsetMatrix;
+				mNew = mNewTemp;
+				totalWeight = 1.0;
+				break;
+			}
+
+			else if (index == vertexId && vertexIdWeight != 1.0)
+			{
+				aiMatrix4x4 offsetMatrix = mesh->mBones[k]->mOffsetMatrix;
+				aiString nameMesh = mesh->mBones[k]->mName;
+				aiNode *node = sc->mRootNode->FindNode(nameMesh);
+				aiMatrix4x4 m = node->mTransformation;
+				aiMatrix4x4 mNewTemp = m*offsetMatrix;
+				mNewTemp = { vertexIdWeight*mNewTemp.a1,vertexIdWeight*mNewTemp.a2,vertexIdWeight*mNewTemp.a3,vertexIdWeight*mNewTemp.a4,
+					         vertexIdWeight*mNewTemp.b1,vertexIdWeight*mNewTemp.b2,vertexIdWeight*mNewTemp.b3,vertexIdWeight*mNewTemp.b4,
+					         vertexIdWeight*mNewTemp.c1,vertexIdWeight*mNewTemp.c2,vertexIdWeight*mNewTemp.c3,vertexIdWeight*mNewTemp.c4,
+					         vertexIdWeight*mNewTemp.d1,vertexIdWeight*mNewTemp.d2,vertexIdWeight*mNewTemp.d3,vertexIdWeight*mNewTemp.d4,
+				};
+
+				mNew = { mNewTemp.a1 + mNew.a1,mNewTemp.a2 + mNew.a2,mNewTemp.a3 + mNew.a3,mNewTemp.a4 + mNew.a4,
+					     mNewTemp.b1 + mNew.b1,mNewTemp.b2 + mNew.b2,mNewTemp.b3 + mNew.b3,mNewTemp.b4 + mNew.b4,
+					     mNewTemp.c1 + mNew.c1,mNewTemp.c2 + mNew.c2,mNewTemp.c3 + mNew.c3,mNewTemp.c4 + mNew.c4,
+					     mNewTemp.d1 + mNew.d1,mNewTemp.d2 + mNew.d2,mNewTemp.d3 + mNew.d3,mNewTemp.d4 + mNew.d4,
+				};
+				totalWeight += vertexIdWeight;
+				break;
+			}
+		}
+	}
+	totalWeight;
+	return mNew;
+}
+void calIndexPointsInfluenceTotalInit()
+{
+	allVertexAfterCalIndexPointsInfluence.clear();
+	aiMesh* mesh = scene->mMeshes[0];
+	int numOfAllVertex = mesh->mNumVertices;
+	for (int i = 0; i < numOfAllVertex; i++)
+	{
+		aiMatrix4x4 mNew = calIndexPointsInfluenceTotal(scene, i, mesh);//here index=Mesh Data.txt 中的Vertex id:
+		allVertexAfterCalIndexPointsInfluence.push_back(mNew);
+	}
+
+}
+
+
+
 
 aiVector3D chooseADposKey(int tick, aiNodeAnim* chnl)
 {
@@ -140,67 +214,10 @@ void motion(const aiScene* sc, int tick, aiNode* nd)//change node's mTransmition
 	
 }
 
-aiMatrix4x4 calIndexPointsInfluenceTotal(const aiScene* sc, int index, aiMesh* mesh)
-{
-	aiMatrix4x4 mNew = { 0.0,0.0,0.0,0.0,
-		0.0,0.0,0.0,0.0,
-		0.0,0.0,0.0,0.0,
-		0.0,0.0,0.0,0.0,
-	};
-	double totalWeight = 0;
-	
-	for (int k = 0; k < mesh->mNumBones; k++)
-	{
-		if (totalWeight == 1.0)
-		{
-			break;
-		}
-		int eachBoneVertexNum = mesh->mBones[k]->mNumWeights;
-		for (int m = 0; m < eachBoneVertexNum; m++)
-		{
-			int vertexId = mesh->mBones[k]->mWeights[m].mVertexId;
-			float vertexIdWeight = mesh->mBones[k]->mWeights[m].mWeight;
-			//if(vertexIdWeight==1.0)
-			if (index == vertexId && vertexIdWeight == 1.0)
-			{
-				aiMatrix4x4 offsetMatrix = mesh->mBones[k]->mOffsetMatrix;
-				aiString nameMesh = mesh->mBones[k]->mName;
-				aiNode *node = sc->mRootNode->FindNode(nameMesh);
-				aiMatrix4x4 m = node->mTransformation;
-				aiMatrix4x4 mNewTemp = m*offsetMatrix;
-				mNew = mNewTemp;
-				totalWeight = 1.0;
-				break;
-			}
 
-			else if (index == vertexId && vertexIdWeight!=1.0)
-			{
-				aiMatrix4x4 offsetMatrix = mesh->mBones[k]->mOffsetMatrix;
-				//aiString nameMesh = mesh->mBones[k]->mName;
-				//aiNode *node = sc->mRootNode->FindNode(nameMesh);
-				//aiMatrix4x4 m = node->mTransformation;
-				aiMatrix4x4 mNewTemp = offsetMatrix;//m*offsetMatrix  error
-				mNewTemp = { vertexIdWeight*mNewTemp.a1,vertexIdWeight*mNewTemp.a2,vertexIdWeight*mNewTemp.a3,vertexIdWeight*mNewTemp.a4,
-					         vertexIdWeight*mNewTemp.b1,vertexIdWeight*mNewTemp.b2,vertexIdWeight*mNewTemp.b3,vertexIdWeight*mNewTemp.b4,
-					         vertexIdWeight*mNewTemp.c1,vertexIdWeight*mNewTemp.c2,vertexIdWeight*mNewTemp.c3,vertexIdWeight*mNewTemp.c4,
-					         vertexIdWeight*mNewTemp.d1,vertexIdWeight*mNewTemp.d2,vertexIdWeight*mNewTemp.d3,vertexIdWeight*mNewTemp.d4,
-				};
-
-				mNew = { mNewTemp.a1 + mNew.a1,mNewTemp.a2 + mNew.a2,mNewTemp.a3 + mNew.a3,mNewTemp.a4 + mNew.a4,
-					     mNewTemp.b1 + mNew.b1,mNewTemp.b2 + mNew.b2,mNewTemp.b3 + mNew.b3,mNewTemp.b4 + mNew.b4,
-					     mNewTemp.c1 + mNew.c1,mNewTemp.c2 + mNew.c2,mNewTemp.c3 + mNew.c3,mNewTemp.c4 + mNew.c4,
-					     mNewTemp.d1 + mNew.d1,mNewTemp.d2 + mNew.d2,mNewTemp.d3 + mNew.d3,mNewTemp.d4 + mNew.d4,
-				};
-				totalWeight += vertexIdWeight;
-				break;
-			}
-		}
-	}
-	totalWeight;
-	return mNew;
-}
 void render(const aiScene* sc)
 {
+	calIndexPointsInfluenceTotalInit();
 	aiMesh* mesh = scene->mMeshes[0];
 	if (mesh->HasNormals())
 		glEnable(GL_LIGHTING);
@@ -244,7 +261,8 @@ void render(const aiScene* sc)
 			float yy = mesh->mVertices[index].y;
 			float zz = mesh->mVertices[index].z;
 			GLfloat temp[] = { xx, yy, zz };//use for debug
-			aiMatrix4x4 mNew = calIndexPointsInfluenceTotal(sc, index, mesh);//here index=Mesh Data.txt 中的Vertex id:
+			
+			aiMatrix4x4 mNew = allVertexAfterCalIndexPointsInfluence[index];
 			float xNew = xx*mNew.a1 + yy*mNew.a2 + zz*mNew.a3 + mNew.a4;// need to confirm
 			float yNew = xx*mNew.b1 + yy*mNew.b2 + zz*mNew.b3 + mNew.b4;
 			float zNew = xx*mNew.c1 + yy*mNew.c2 + zz*mNew.c3 + mNew.c4;
@@ -273,7 +291,7 @@ void update(int value)
 	tick++;
 	if (tick > TicksPerSec) tick = 0;
 	glutPostRedisplay();
-	glutTimerFunc(5, update, 1);
+	glutTimerFunc(1, update, 1);
 }
 
 void drawFloor()
@@ -321,7 +339,8 @@ void initialise()
 	glLightModeli(GL_LIGHT_MODEL_TWO_SIDE, GL_TRUE);
 	glColorMaterial(GL_FRONT_AND_BACK, GL_DIFFUSE);
 	fileout.open("sceneInfo.txt", ios::out);
-	loadModel(fileName);		
+	loadModel(fileName);
+
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
 

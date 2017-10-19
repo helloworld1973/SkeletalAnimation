@@ -28,8 +28,5 @@
     <ClCompile Include="CharacterModelLoader.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="BVHModelLoader.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
   </ItemGroup>
 </Project>

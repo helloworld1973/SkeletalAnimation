@@ -226,7 +226,7 @@ void update(int value)
 	tick++;
 	if (tick > TicksPerSec) tick = 0;
 	glutPostRedisplay();
-	glutTimerFunc(50, update, 1);
+	glutTimerFunc(25, update, 1);
 }
 
 void drawFloor()
@@ -359,7 +359,7 @@ int main(int argc, char** argv)
 
 	initialise();
 	glutDisplayFunc(display);
-	glutTimerFunc(50, update, 1);//glutTimerFunc(50, updateAnimation, 1);
+	glutTimerFunc(25, update, 1);//glutTimerFunc(50, updateAnimation, 1);
 	glutKeyboardFunc(keyboard);
 	glutSpecialFunc(special);
 	glutMainLoop();
