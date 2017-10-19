@@ -15,7 +15,7 @@ using namespace std;
 #include <assimp/postprocess.h>
 #include "assimp_extras.h"
 
-const int TicksPerSec = 1000;//change 4640
+const int TicksPerSec = 4640;//change 4640
 const char* fileName = "wuson.x";//change
 const int chooseAnim = 0;//here can change 0:Wuson_Run  1:Wuson_Walk  2:Wuson_Bind
 
@@ -47,17 +47,13 @@ aiVector3D chooseADposKey(int tick, aiNodeAnim* chnl)
 	{
 		int lastTime = (int)chnl->mPositionKeys[i].mTime;
 		int nowTime = (int)chnl->mPositionKeys[i + 1].mTime;
-		if (lastTime <= tick && tick <= nowTime)
+		if (lastTime <= tick && tick < nowTime)
 		{
-//			aiVector3D	posn1 = chnl->mPositionKeys[lastTime].mValue;
-//			aiVector3D	posn2 = chnl->mPositionKeys[nowTime].mValue;
-//			float factor = (tick - lastTime) / (nowTime - lastTime);
-//
-//			aiVector3D	posn = { posn1.x+(posn2.x- posn1.x)/factor,  
-//				                 posn1.y + (posn2.y - posn1.y)/factor,
-//				                 posn1.z + (posn2.z - posn1.z)/factor 
-//			                    };
-			aiVector3D posn= chnl->mPositionKeys[lastTime].mValue;
+			aiVector3D	posn1 = chnl->mPositionKeys[i].mValue;
+			aiVector3D	posn2 = chnl->mPositionKeys[i+1].mValue;
+			float theta = ((double)tick - (double)lastTime) / ((double)nowTime - (double)lastTime);
+
+			aiVector3D	posn = (1 - theta)*posn1 + theta*posn2;		
 			
 			return posn;
 		}
@@ -72,8 +68,8 @@ aiQuaternion chooseADrotKey(int tick, aiNodeAnim* chnl)
 		int nowTime = (int)chnl->mRotationKeys[i + 1].mTime;
 		if (lastTime <= tick && tick < nowTime)
 		{
-			aiQuaternion rotn1= chnl->mRotationKeys[lastTime].mValue;
-			aiQuaternion rotn2 = chnl->mRotationKeys[nowTime].mValue;
+			aiQuaternion rotn1= chnl->mRotationKeys[i].mValue;
+			aiQuaternion rotn2 = chnl->mRotationKeys[i+1].mValue;
 			double factor = (tick - lastTime) / (nowTime - lastTime);
 
 			aiQuaternion rotn;
@@ -102,8 +98,7 @@ void motion(const aiScene* sc, int tick, aiNode* nd)//change node's mTransmition
 		mTransformationParent = ndParent->mTransformation;
 	}
 
-	aiAnimation* anim;
-	anim = sc->mAnimations[chooseAnim];
+	aiAnimation* anim=sc->mAnimations[chooseAnim];
 
 	for (int i = 0; i < anim->mNumChannels; i++)
 	{
@@ -145,7 +140,65 @@ void motion(const aiScene* sc, int tick, aiNode* nd)//change node's mTransmition
 	
 }
 
+aiMatrix4x4 calIndexPointsInfluenceTotal(const aiScene* sc, int index, aiMesh* mesh)
+{
+	aiMatrix4x4 mNew = { 0.0,0.0,0.0,0.0,
+		0.0,0.0,0.0,0.0,
+		0.0,0.0,0.0,0.0,
+		0.0,0.0,0.0,0.0,
+	};
+	double totalWeight = 0;
+	
+	for (int k = 0; k < mesh->mNumBones; k++)
+	{
+		if (totalWeight == 1.0)
+		{
+			break;
+		}
+		int eachBoneVertexNum = mesh->mBones[k]->mNumWeights;
+		for (int m = 0; m < eachBoneVertexNum; m++)
+		{
+			int vertexId = mesh->mBones[k]->mWeights[m].mVertexId;
+			float vertexIdWeight = mesh->mBones[k]->mWeights[m].mWeight;
+			//if(vertexIdWeight==1.0)
+			if (index == vertexId && vertexIdWeight == 1.0)
+			{
+				aiMatrix4x4 offsetMatrix = mesh->mBones[k]->mOffsetMatrix;
+				aiString nameMesh = mesh->mBones[k]->mName;
+				aiNode *node = sc->mRootNode->FindNode(nameMesh);
+				aiMatrix4x4 m = node->mTransformation;
+				aiMatrix4x4 mNewTemp = m*offsetMatrix;
+				mNew = mNewTemp;
+				totalWeight = 1.0;
+				break;
+			}
 
+			else if (index == vertexId && vertexIdWeight!=1.0)
+			{
+				aiMatrix4x4 offsetMatrix = mesh->mBones[k]->mOffsetMatrix;
+				//aiString nameMesh = mesh->mBones[k]->mName;
+				//aiNode *node = sc->mRootNode->FindNode(nameMesh);
+				//aiMatrix4x4 m = node->mTransformation;
+				aiMatrix4x4 mNewTemp = offsetMatrix;//m*offsetMatrix  error
+				mNewTemp = { vertexIdWeight*mNewTemp.a1,vertexIdWeight*mNewTemp.a2,vertexIdWeight*mNewTemp.a3,vertexIdWeight*mNewTemp.a4,
+					         vertexIdWeight*mNewTemp.b1,vertexIdWeight*mNewTemp.b2,vertexIdWeight*mNewTemp.b3,vertexIdWeight*mNewTemp.b4,
+					         vertexIdWeight*mNewTemp.c1,vertexIdWeight*mNewTemp.c2,vertexIdWeight*mNewTemp.c3,vertexIdWeight*mNewTemp.c4,
+					         vertexIdWeight*mNewTemp.d1,vertexIdWeight*mNewTemp.d2,vertexIdWeight*mNewTemp.d3,vertexIdWeight*mNewTemp.d4,
+				};
+
+				mNew = { mNewTemp.a1 + mNew.a1,mNewTemp.a2 + mNew.a2,mNewTemp.a3 + mNew.a3,mNewTemp.a4 + mNew.a4,
+					     mNewTemp.b1 + mNew.b1,mNewTemp.b2 + mNew.b2,mNewTemp.b3 + mNew.b3,mNewTemp.b4 + mNew.b4,
+					     mNewTemp.c1 + mNew.c1,mNewTemp.c2 + mNew.c2,mNewTemp.c3 + mNew.c3,mNewTemp.c4 + mNew.c4,
+					     mNewTemp.d1 + mNew.d1,mNewTemp.d2 + mNew.d2,mNewTemp.d3 + mNew.d3,mNewTemp.d4 + mNew.d4,
+				};
+				totalWeight += vertexIdWeight;
+				break;
+			}
+		}
+	}
+	totalWeight;
+	return mNew;
+}
 void render(const aiScene* sc)
 {
 	aiMesh* mesh = scene->mMeshes[0];
@@ -159,10 +212,10 @@ void render(const aiScene* sc)
 	else
 		glDisable(GL_COLOR_MATERIAL);
 	
-	aiFace* face;
+	
 	for (int k = 0; k < mesh->mNumFaces; k++)
 	{
-		face = &mesh->mFaces[k];
+		aiFace* face = &mesh->mFaces[k];
 		GLenum face_mode;
 		switch (face->mNumIndices)
 		{
@@ -190,9 +243,9 @@ void render(const aiScene* sc)
 			float xx = mesh->mVertices[index].x;
 			float yy = mesh->mVertices[index].y;
 			float zz = mesh->mVertices[index].z;
-			GLfloat temp[] = { xx, yy, zz };
-			aiMatrix4x4 mNew = calIndexPointsInfluenceTotal(sc, index, mesh);
-			float xNew = xx*mNew.a1 + yy*mNew.a2 + zz*mNew.a3 + mNew.a4;
+			GLfloat temp[] = { xx, yy, zz };//use for debug
+			aiMatrix4x4 mNew = calIndexPointsInfluenceTotal(sc, index, mesh);//here index=Mesh Data.txt ÖÐµÄVertex id:
+			float xNew = xx*mNew.a1 + yy*mNew.a2 + zz*mNew.a3 + mNew.a4;// need to confirm
 			float yNew = xx*mNew.b1 + yy*mNew.b2 + zz*mNew.b3 + mNew.b4;
 			float zNew = xx*mNew.c1 + yy*mNew.c2 + zz*mNew.c3 + mNew.c4;
 
@@ -203,50 +256,6 @@ void render(const aiScene* sc)
 		glEnd();
 	}
 }
-
-aiMatrix4x4 calIndexPointsInfluenceTotal(const aiScene* sc, int index, aiMesh* mesh)
-{
-	aiMatrix4x4 mNew = { 0.0,0.0,0.0,0.0,
-		0.0,0.0,0.0,0.0,
-		0.0,0.0,0.0,0.0,
-		0.0,0.0,0.0,0.0,
-	};
-	double totalWeight = 0;
-	for (int k = 0; k < mesh->mNumBones; k++)
-	{
-		int eachBoneVertexNum = mesh->mBones[k]->mNumWeights;
-		for (int m = 0; m < eachBoneVertexNum; m++)
-		{
-			int boneIndex = mesh->mBones[k]->mWeights[m].mVertexId;
-			float boneIndexWeight = mesh->mBones[k]->mWeights[m].mWeight;
-			if (index == boneIndex)
-			{
-				aiMatrix4x4 offsetMatrix = mesh->mBones[k]->mOffsetMatrix;
-				aiString nameMesh = mesh->mBones[k]->mName;
-				aiNode *node = sc->mRootNode->FindNode(nameMesh);
-				aiMatrix4x4 m = node->mTransformation;
-				aiMatrix4x4 mNewTemp = m*offsetMatrix;
-				mNewTemp = { boneIndexWeight*mNewTemp.a1,boneIndexWeight*mNewTemp.a2,boneIndexWeight*mNewTemp.a3,boneIndexWeight*mNewTemp.a4,
-					boneIndexWeight*mNewTemp.b1,boneIndexWeight*mNewTemp.b2,boneIndexWeight*mNewTemp.b3,boneIndexWeight*mNewTemp.b4,
-					boneIndexWeight*mNewTemp.c1,boneIndexWeight*mNewTemp.c2,boneIndexWeight*mNewTemp.c3,boneIndexWeight*mNewTemp.c4,
-					boneIndexWeight*mNewTemp.d1,boneIndexWeight*mNewTemp.d2,boneIndexWeight*mNewTemp.d3,boneIndexWeight*mNewTemp.d4,
-				};
-
-				mNew = { mNewTemp.a1 + mNew.a1,mNewTemp.a2 + mNew.a2,mNewTemp.a3 + mNew.a3,mNewTemp.a4 + mNew.a4,
-					mNewTemp.b1 + mNew.b1,mNewTemp.b2 + mNew.b2,mNewTemp.b3 + mNew.b3,mNewTemp.b4 + mNew.b4,
-					mNewTemp.c1 + mNew.c1,mNewTemp.c2 + mNew.c2,mNewTemp.c3 + mNew.c3,mNewTemp.c4 + mNew.c4,
-					mNewTemp.d1 + mNew.d1,mNewTemp.d2 + mNew.d2,mNewTemp.d3 + mNew.d3,mNewTemp.d4 + mNew.d4,
-				};
-				totalWeight += boneIndexWeight;
-				break;
-			}
-		}
-	}
-	totalWeight;
-	return mNew;
-}
-
-
 
 
 void special(int key, int x, int y)

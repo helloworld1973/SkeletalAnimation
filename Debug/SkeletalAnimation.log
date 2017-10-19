@@ -1,25 +1,2 @@
-﻿  BVHModelLoader.cpp
-d:\vs2015projects\skeletalanimation\skeletalanimation\assimp_extras.h(145): warning C4018: “<”: 有符号/无符号不匹配
-d:\vs2015projects\skeletalanimation\skeletalanimation\assimp_extras.h(151): warning C4018: “<”: 有符号/无符号不匹配
-d:\vs2015projects\skeletalanimation\skeletalanimation\assimp_extras.h(179): warning C4018: “<”: 有符号/无符号不匹配
-d:\vs2015projects\skeletalanimation\skeletalanimation\assimp_extras.h(186): warning C4018: “<”: 有符号/无符号不匹配
-d:\vs2015projects\skeletalanimation\skeletalanimation\assimp_extras.h(195): warning C4018: “<”: 有符号/无符号不匹配
-d:\vs2015projects\skeletalanimation\skeletalanimation\assimp_extras.h(205): warning C4018: “<”: 有符号/无符号不匹配
-d:\vs2015projects\skeletalanimation\skeletalanimation\assimp_extras.h(213): warning C4018: “<”: 有符号/无符号不匹配
-d:\vs2015projects\skeletalanimation\skeletalanimation\assimp_extras.h(231): warning C4018: “<”: 有符号/无符号不匹配
-d:\vs2015projects\skeletalanimation\skeletalanimation\assimp_extras.h(237): warning C4018: “<”: 有符号/无符号不匹配
-d:\vs2015projects\skeletalanimation\skeletalanimation\assimp_extras.h(242): warning C4018: “<”: 有符号/无符号不匹配
-d:\vs2015projects\skeletalanimation\skeletalanimation\assimp_extras.h(248): warning C4018: “<”: 有符号/无符号不匹配
-d:\vs2015projects\skeletalanimation\skeletalanimation\bvhmodelloader.cpp(54): warning C4018: “<”: 有符号/无符号不匹配
-d:\vs2015projects\skeletalanimation\skeletalanimation\bvhmodelloader.cpp(82): warning C4018: “<”: 有符号/无符号不匹配
-d:\vs2015projects\skeletalanimation\skeletalanimation\bvhmodelloader.cpp(135): warning C4018: “<”: 有符号/无符号不匹配
-d:\vs2015projects\skeletalanimation\skeletalanimation\bvhmodelloader.cpp(153): warning C4018: “<”: 有符号/无符号不匹配
-d:\vs2015projects\skeletalanimation\skeletalanimation\bvhmodelloader.cpp(177): warning C4018: “<”: 有符号/无符号不匹配
-d:\vs2015projects\skeletalanimation\skeletalanimation\bvhmodelloader.cpp(253): warning C4305: “参数”: 从“double”到“GLfloat”截断
-d:\vs2015projects\skeletalanimation\skeletalanimation\bvhmodelloader.cpp(272): warning C4244: “-=”: 从“double”转换到“float”，可能丢失数据
-d:\vs2015projects\skeletalanimation\skeletalanimation\bvhmodelloader.cpp(273): warning C4244: “+=”: 从“double”转换到“float”，可能丢失数据
-d:\vs2015projects\skeletalanimation\skeletalanimation\bvhmodelloader.cpp(277): warning C4244: “+=”: 从“double”转换到“float”，可能丢失数据
-d:\vs2015projects\skeletalanimation\skeletalanimation\bvhmodelloader.cpp(278): warning C4244: “-=”: 从“double”转换到“float”，可能丢失数据
-d:\vs2015projects\skeletalanimation\skeletalanimation\bvhmodelloader.cpp(326): warning C4305: “参数”: 从“double”到“GLfloat”截断
-  SkeletalAnimation.vcxproj -> D:\VS2015Projects\SkeletalAnimation\Debug\SkeletalAnimation.exe
+﻿  SkeletalAnimation.vcxproj -> D:\VS2015Projects\SkeletalAnimation\Debug\SkeletalAnimation.exe
   SkeletalAnimation.vcxproj -> D:\VS2015Projects\SkeletalAnimation\Debug\SkeletalAnimation.pdb (Full PDB)

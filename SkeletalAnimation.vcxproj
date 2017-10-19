@@ -25,6 +25,7 @@
     <None Include="wuson.x" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="BVHModelLoader.cpp" />
     <ClCompile Include="CharacterModelLoader.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
