@@ -246,7 +246,40 @@ void drawFloor()
 	}
 }
 
-//----Keyboard callback to toggle initial model orientation---
+void drawBarrier(int a,int b,int c) {
+	// legs
+	glColor3f(0.4, 0.5, 0.7);
+	glTranslatef(a,b,c);
+	glPushMatrix();
+	glRotatef(30, 1, 0, 0);
+	glScalef(1, 8, 1);
+	glutSolidCube(0.5);
+	glPopMatrix();
+
+	glPushMatrix();
+	glTranslatef(-0.6, 0, 1.2);
+	glRotatef(120, 0, 1, 0);
+	glRotatef(30, 1, 0, 0);
+	glScalef(1, 8, 1);
+	glutSolidCube(0.5);
+	glPopMatrix();
+
+	glPushMatrix();
+	glTranslatef(1, 0, 1.3);
+	glRotatef(-120, 0, 1, 0);
+	glRotatef(30, 1, 0, 0);
+	glScalef(1, 8, 1);
+	glutSolidCube(0.5);
+	glPopMatrix();
+
+	//top
+	glPushMatrix();
+	glScalef(0.7, 0.7, 0.7);
+	glTranslatef(0, 1.8, 1.2);
+	glutSolidDodecahedron();
+	glPopMatrix();
+}
+
 void keyboard(unsigned char key, int x, int y)
 {
 	if (key == 'w')
@@ -319,6 +352,9 @@ void display()
 	motion(scene, tick, scene->mRootNode);//先把变换后的坐标点给替换了
 	render(scene);//没改变该函数
 	drawFloor();
+	drawBarrier(10, 2, -2);
+	drawBarrier(0, 0, 13);
+	drawBarrier(0, 0, 13);
 
 	glColor3f(1., 0.78, 0.06);
 	

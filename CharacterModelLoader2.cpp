@@ -26,6 +26,7 @@ int tick = 0;
 aiVector3D* verts;
 aiVector3D* norm;
 const char* fileName = "dwarf.x";//change
+int gogogo = 0;
 
 
 bool loadModel(const char* fileName)
@@ -198,8 +199,10 @@ void updateVertexCoordinate() {
 }
 
 
+
 void update(int value)
 {
+	gogogo += 30;
 	aiAnimation *anim;
 	anim = scene->mAnimations[0];
 
@@ -216,9 +219,9 @@ void update(int value)
 
 void drawFloor()
 {
-	glDisable(GL_POLYGON);			//Disable lighting when drawing floor.
+	glDisable(GL_LIGHTING);			//Disable lighting when drawing floor.
 
-	//glColor3f(0.5, 0.5, 0.);			//Floor colour
+	glColor3f(0., 0.5, 0.);			//Floor colour
 
 	for (float i = -50; i <= 50; i++)
 	{
@@ -299,6 +302,17 @@ void initialise()
 	}
 }
 
+void drawShield(float height, float base,int x,int y) {
+	GLUquadric *obj = gluNewQuadric();
+	glColor3f(0, 0.16, 0.16f); 	
+	glPushMatrix();
+	glTranslatef(x, 0, y);
+	glRotatef(-90, 1.0, 0.0, 0.0);
+	gluCylinder(obj, base, base - (0.2*base), height, 20, 20);
+	glPopMatrix();
+	
+}
+
 void display()
 {
 	float pos[4] = { 50, 50, 50, 1 };
@@ -329,12 +343,18 @@ void display()
 	glRotatef(angle, 0.f, 1.f, 0.f);  //Continuous rotation about the y-axis
 
 	drawFloor();
+	
 
-	glColor3f(1., 0.78, 0.06);
+	//glColor3f(1., 0.78, 0.06);
 	// scale the whole asset to fit into our view frustum 
 
 	glScalef(tmp, tmp, tmp);
 
+	//glScalef(5, 5, 5);
+	drawShield(40,20,50,50);
+	drawShield(40, 20, 0, 40);
+	drawShield(40, 20, -50, 50);
+	
 	// center the model
 	glTranslatef(-scene_center.x, -scene_center.y, -scene_center.z);
 
