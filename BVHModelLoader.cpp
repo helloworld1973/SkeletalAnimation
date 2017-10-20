@@ -15,8 +15,8 @@ using namespace std;
 #include <assimp/postprocess.h>
 #include "assimp_extras.h"
 
-const int TicksPerSec=219;//change
-const char* fileName = "Dance.bvh";//change
+const int TicksPerSec = 2751;//219;//change
+const char* fileName = "01_01.bvh";//change
 
 const aiScene* scene = NULL;
 float angle = 0.0;
@@ -34,7 +34,7 @@ ofstream fileout;
 bool loadModel(const char* fileName)
 {
 	scene = aiImportFile(fileName, aiProcessPreset_TargetRealtime_Quality);
-	if(scene == NULL) exit(1);
+	if (scene == NULL) exit(1);
 	printSceneInfo(fileout, scene);
 	printTreeInfo(fileout, scene->mRootNode);
 	printMeshInfo(fileout, scene);
@@ -60,26 +60,26 @@ void motion(const aiScene* sc, int tick, aiNode* nd)
 	aiMatrix4x4 mTransformationParent;
 
 	aiNode* ndParent = nd->mParent;
-	aiString ndName=nd->mName;
+	aiString ndName = nd->mName;
 	aiNodeAnim* chnl;
 	int flag = 0;//use to identify common point(1) or end_site point(0)
 
 	if (ndParent == NULL)
 	{
 		mTransformationParent = { 1.0, 0.0, 0.0, 0.0,
-									0.0, 1.0, 0.0, 0.0,
-									0.0, 0.0, 1.0, 0.0,
-									0.0, 0.0, 0.0, 1.0 };
+			0.0, 1.0, 0.0, 0.0,
+			0.0, 0.0, 1.0, 0.0,
+			0.0, 0.0, 0.0, 1.0 };
 	}
 	else
 	{
 		mTransformationParent = ndParent->mTransformation;
 	}
-	
+
 	aiAnimation* anim = new aiAnimation;
 	anim = sc->mAnimations[0];
 
-	for (int i=0; i < anim->mNumChannels; i++)
+	for (int i = 0; i < anim->mNumChannels; i++)
 	{
 		if (anim->mChannels[i]->mNodeName.operator==(ndName))
 		{
@@ -88,7 +88,7 @@ void motion(const aiScene* sc, int tick, aiNode* nd)
 			break;
 		}
 	}
-	
+
 	if (flag == 1)
 	{
 		aiVector3D posn; aiQuaternion rotn;
@@ -128,7 +128,7 @@ void motion(const aiScene* sc, int tick, aiNode* nd)
 				break;
 			}
 		}
-				
+
 	}
 
 
@@ -138,7 +138,7 @@ void motion(const aiScene* sc, int tick, aiNode* nd)
 
 void render(const aiScene* sc)
 {
-	aiMesh* mesh=scene->mMeshes[0];
+	aiMesh* mesh = scene->mMeshes[0];
 	if (mesh->HasNormals())
 		glEnable(GL_LIGHTING);
 	else
@@ -154,7 +154,7 @@ void render(const aiScene* sc)
 	{
 		aiString nameMesh = mesh->mBones[k]->mName;
 		aiMatrix4x4 offsetMatrix = mesh->mBones[k]->mOffsetMatrix;
-		int eachBoneVertexNum=mesh->mBones[k]->mNumWeights;
+		int eachBoneVertexNum = mesh->mBones[k]->mNumWeights;
 		int eachBoneFacesNum = eachBoneVertexNum / 3;
 		aiNode *node = sc->mRootNode->FindNode(nameMesh);
 		aiMatrix4x4 m = node->mTransformation;//取当前bone名字对应点的mTransformation
@@ -226,7 +226,7 @@ void update(int value)
 	tick++;
 	if (tick > TicksPerSec) tick = 0;
 	glutPostRedisplay();
-	glutTimerFunc(25, update, 1);
+	glutTimerFunc(1000.0 / 120.0, update, 1);
 }
 
 void drawFloor()
@@ -245,24 +245,6 @@ void drawFloor()
 		glEnd();
 	}
 }
-
-void drawPlate()
-{
-	glDisable(GL_LIGHTING);			//Disable lighting when drawing floor.
-
-	glColor3f(0.7, 0.5, 0.);			//Floor colour
-
-	for (float i = -2; i <= 2; i++)
-	{
-		glBegin(GL_QUADS);			//A set of grid lines on the xz-plane
-		glVertex3f(-2, 0, i);
-		glVertex3f(2, 0, i);
-		glVertex3f(i, 0, -2);
-		glVertex3f(i, 0, 2);
-		glEnd();
-	}
-}
-
 
 //----Keyboard callback to toggle initial model orientation---
 void keyboard(unsigned char key, int x, int y)
@@ -286,7 +268,7 @@ void keyboard(unsigned char key, int x, int y)
 //--------------------OpenGL initialization------------------------
 void initialise()
 {
-    glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
+	glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
 	glEnable(GL_LIGHTING);
 	glEnable(GL_LIGHT0);
 	glEnable(GL_DEPTH_TEST);
@@ -298,7 +280,7 @@ void initialise()
 	storeEndSiteInitTransformation(scene->mRootNode);
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
-	
+
 	gluPerspective(45, 1, 1.0, 1000.0);
 	//glFrustum(-5.0, 5.0, -5.0, 5.0, 5.0, 1000.0);   //Camera Frustum
 }
@@ -309,39 +291,39 @@ void initialise()
 //    stored for subsequent display updates.
 void display()
 {
-	float pos[4] = {50, 50, 50, 1};
+	float pos[4] = { 50, 50, 50, 1 };
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
-	gluLookAt(eye_x, 3, eye_z,  look_x, -3, look_z, 0, 1, 0);
+
+	float tmp = scene_max.x - scene_min.x;
+	tmp = aisgl_max(scene_max.y - scene_min.y, tmp);
+	tmp = aisgl_max(scene_max.z - scene_min.z, tmp);
+	tmp = 1.f / tmp;
+
+	aiQuaterniont<float> quat;
+	aiVector3t<float> look;
+	scene->mRootNode->mTransformation.DecomposeNoScaling(quat, look);
+	look = tmp * look;
+	
+	gluLookAt(look.x+ eye_x, look.y+3, look.z + eye_z, look.x+ look_x, look.y - 3, look.z+ look_z, 0, 1, 0);
+
+	//gluLookAt(eye_x, 3, eye_z, look_x, -3, look_z, 0, 1, 0);
 	glLightfv(GL_LIGHT0, GL_POSITION, pos);
 
 	glRotatef(rot_x, 1, 0, 0);
 	glRotatef(angle, 0.f, 1.f, 0.f);  //Continuous rotation about the y-axis
-	
-	drawFloor();
-	drawPlate();
-
-	glColor3f(1., 0.78, 0.06);
-	// scale the whole asset to fit into our view frustum 
-	float tmp = scene_max.x - scene_min.x;
-	tmp = aisgl_max(scene_max.y - scene_min.y,tmp);
-	tmp = aisgl_max(scene_max.z - scene_min.z,tmp);
-	tmp = 1.f / tmp;
 	glScalef(tmp, tmp, tmp);
 
-    // center the model
-	glTranslatef( -scene_center.x, -scene_center.y, -scene_center.z );
+	motion(scene, tick, scene->mRootNode);//先把变换后的坐标点给替换了
+	render(scene);//没改变该函数
+	drawFloor();
 
-        // if the display list has not been made yet, create a new one and
-        // fill it with scene contents
-
-            // now begin at the root node of the imported data and traverse
-            // the scenegraph by multiplying subsequent local transforms
-            // together on GL's matrix stack.
-		   motion(scene, tick, scene->mRootNode);//先把变换后的坐标点给替换了
-	       render(scene);//没改变该函数
+	glColor3f(1., 0.78, 0.06);
+	
+			// center the model
+	//glTranslatef(-scene_center.x, -scene_center.y, -scene_center.z);	
 
 	glutSwapBuffers();
 }
@@ -354,16 +336,15 @@ int main(int argc, char** argv)
 	glutInitDisplayMode(GLUT_RGB | GLUT_DOUBLE | GLUT_DEPTH);
 	glutInitWindowSize(800, 800);
 	glutCreateWindow("Assimp Test");
-	glutInitContextVersion (4, 2);
-	glutInitContextProfile ( GLUT_CORE_PROFILE );
+	glutInitContextVersion(4, 2);
+	glutInitContextProfile(GLUT_CORE_PROFILE);
 
 	initialise();
 	glutDisplayFunc(display);
-	glutTimerFunc(25, update, 1);//glutTimerFunc(50, updateAnimation, 1);
+	glutTimerFunc(1000.0/120.0, update, 1);//glutTimerFunc(50, updateAnimation, 1);
 	glutKeyboardFunc(keyboard);
 	glutSpecialFunc(special);
 	glutMainLoop();
 
 	aiReleaseImport(scene);
 }
-

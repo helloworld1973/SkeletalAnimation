@@ -22,10 +22,12 @@
     <ClInclude Include="assimp_extras.h" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="01_01.bvh" />
+    <None Include="dwarf.x" />
     <None Include="wuson.x" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="CharacterModelLoader.cpp" />
+    <ClCompile Include="CharacterModelLoader2.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{1C770BF3-FA31-4DC2-9FFE-715E17E1E688}</ProjectGuid>

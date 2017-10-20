@@ -1,4 +1,4 @@
-﻿  CharacterModelLoader.cpp
+﻿  CharacterModelLoader2.cpp
 d:\vs2015projects\skeletalanimation\skeletalanimation\assimp_extras.h(145): warning C4018: “<”: 有符号/无符号不匹配
 d:\vs2015projects\skeletalanimation\skeletalanimation\assimp_extras.h(151): warning C4018: “<”: 有符号/无符号不匹配
 d:\vs2015projects\skeletalanimation\skeletalanimation\assimp_extras.h(179): warning C4018: “<”: 有符号/无符号不匹配
@@ -10,19 +10,27 @@ d:\vs2015projects\skeletalanimation\skeletalanimation\assimp_extras.h(231): warn
 d:\vs2015projects\skeletalanimation\skeletalanimation\assimp_extras.h(237): warning C4018: “<”: 有符号/无符号不匹配
 d:\vs2015projects\skeletalanimation\skeletalanimation\assimp_extras.h(242): warning C4018: “<”: 有符号/无符号不匹配
 d:\vs2015projects\skeletalanimation\skeletalanimation\assimp_extras.h(248): warning C4018: “<”: 有符号/无符号不匹配
-d:\vs2015projects\skeletalanimation\skeletalanimation\charactermodelloader.cpp(54): warning C4018: “<”: 有符号/无符号不匹配
-d:\vs2015projects\skeletalanimation\skeletalanimation\charactermodelloader.cpp(128): warning C4244: “初始化”: 从“double”转换到“float”，可能丢失数据
-d:\vs2015projects\skeletalanimation\skeletalanimation\charactermodelloader.cpp(150): warning C4244: “参数”: 从“double”转换到“float”，可能丢失数据
-d:\vs2015projects\skeletalanimation\skeletalanimation\charactermodelloader.cpp(177): warning C4018: “<”: 有符号/无符号不匹配
-d:\vs2015projects\skeletalanimation\skeletalanimation\charactermodelloader.cpp(212): warning C4018: “<”: 有符号/无符号不匹配
-d:\vs2015projects\skeletalanimation\skeletalanimation\charactermodelloader.cpp(233): warning C4018: “<”: 有符号/无符号不匹配
-d:\vs2015projects\skeletalanimation\skeletalanimation\charactermodelloader.cpp(246): warning C4018: “<”: 有符号/无符号不匹配
-d:\vs2015projects\skeletalanimation\skeletalanimation\charactermodelloader.cpp(318): warning C4244: “-=”: 从“double”转换到“float”，可能丢失数据
-d:\vs2015projects\skeletalanimation\skeletalanimation\charactermodelloader.cpp(319): warning C4244: “+=”: 从“double”转换到“float”，可能丢失数据
-d:\vs2015projects\skeletalanimation\skeletalanimation\charactermodelloader.cpp(323): warning C4244: “+=”: 从“double”转换到“float”，可能丢失数据
-d:\vs2015projects\skeletalanimation\skeletalanimation\charactermodelloader.cpp(324): warning C4244: “-=”: 从“double”转换到“float”，可能丢失数据
-d:\vs2015projects\skeletalanimation\skeletalanimation\charactermodelloader.cpp(366): warning C4305: “参数”: 从“double”到“GLfloat”截断
-d:\vs2015projects\skeletalanimation\skeletalanimation\charactermodelloader.cpp(154): warning C4715: “chooseADrotKey”: 不是所有的控件路径都返回值
-d:\vs2015projects\skeletalanimation\skeletalanimation\charactermodelloader.cpp(135): warning C4715: “chooseADposKey”: 不是所有的控件路径都返回值
+d:\vs2015projects\skeletalanimation\skeletalanimation\charactermodelloader2.cpp(52): warning C4018: “<”: 有符号/无符号不匹配
+d:\vs2015projects\skeletalanimation\skeletalanimation\charactermodelloader2.cpp(65): warning C4018: “<”: 有符号/无符号不匹配
+d:\vs2015projects\skeletalanimation\skeletalanimation\charactermodelloader2.cpp(77): warning C4018: “<”: 有符号/无符号不匹配
+d:\vs2015projects\skeletalanimation\skeletalanimation\charactermodelloader2.cpp(96): warning C4018: “<”: 有符号/无符号不匹配
+d:\vs2015projects\skeletalanimation\skeletalanimation\charactermodelloader2.cpp(113): warning C4018: “<”: 有符号/无符号不匹配
+d:\vs2015projects\skeletalanimation\skeletalanimation\charactermodelloader2.cpp(123): warning C4018: “<”: 有符号/无符号不匹配
+d:\vs2015projects\skeletalanimation\skeletalanimation\charactermodelloader2.cpp(131): warning C4244: “初始化”: 从“double”转换到“float”，可能丢失数据
+d:\vs2015projects\skeletalanimation\skeletalanimation\charactermodelloader2.cpp(132): warning C4244: “初始化”: 从“double”转换到“float”，可能丢失数据
+d:\vs2015projects\skeletalanimation\skeletalanimation\charactermodelloader2.cpp(141): warning C4018: “<”: 有符号/无符号不匹配
+d:\vs2015projects\skeletalanimation\skeletalanimation\charactermodelloader2.cpp(151): warning C4244: “参数”: 从“double”转换到“float”，可能丢失数据
+d:\vs2015projects\skeletalanimation\skeletalanimation\charactermodelloader2.cpp(168): warning C4018: “<”: 有符号/无符号不匹配
+d:\vs2015projects\skeletalanimation\skeletalanimation\charactermodelloader2.cpp(172): warning C4018: “<”: 有符号/无符号不匹配
+d:\vs2015projects\skeletalanimation\skeletalanimation\charactermodelloader2.cpp(189): warning C4018: “<”: 有符号/无符号不匹配
+d:\vs2015projects\skeletalanimation\skeletalanimation\charactermodelloader2.cpp(238): warning C4244: “-=”: 从“double”转换到“float”，可能丢失数据
+d:\vs2015projects\skeletalanimation\skeletalanimation\charactermodelloader2.cpp(239): warning C4244: “+=”: 从“double”转换到“float”，可能丢失数据
+d:\vs2015projects\skeletalanimation\skeletalanimation\charactermodelloader2.cpp(243): warning C4244: “+=”: 从“double”转换到“float”，可能丢失数据
+d:\vs2015projects\skeletalanimation\skeletalanimation\charactermodelloader2.cpp(244): warning C4244: “-=”: 从“double”转换到“float”，可能丢失数据
+d:\vs2015projects\skeletalanimation\skeletalanimation\charactermodelloader2.cpp(280): warning C4018: “<”: 有符号/无符号不匹配
+d:\vs2015projects\skeletalanimation\skeletalanimation\charactermodelloader2.cpp(282): warning C4018: “<”: 有符号/无符号不匹配
+d:\vs2015projects\skeletalanimation\skeletalanimation\charactermodelloader2.cpp(289): warning C4018: “<”: 有符号/无符号不匹配
+d:\vs2015projects\skeletalanimation\skeletalanimation\charactermodelloader2.cpp(292): warning C4018: “<”: 有符号/无符号不匹配
+d:\vs2015projects\skeletalanimation\skeletalanimation\charactermodelloader2.cpp(333): warning C4305: “参数”: 从“double”到“GLfloat”截断
   SkeletalAnimation.vcxproj -> D:\VS2015Projects\SkeletalAnimation\Debug\SkeletalAnimation.exe
   SkeletalAnimation.vcxproj -> D:\VS2015Projects\SkeletalAnimation\Debug\SkeletalAnimation.pdb (Full PDB)

@@ -23,9 +23,15 @@
     <None Include="wuson.x">
       <Filter>资源文件</Filter>
     </None>
+    <None Include="01_01.bvh">
+      <Filter>资源文件</Filter>
+    </None>
+    <None Include="dwarf.x">
+      <Filter>资源文件</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="CharacterModelLoader.cpp">
+    <ClCompile Include="CharacterModelLoader2.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>

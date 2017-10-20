@@ -59,8 +59,7 @@ aiMatrix4x4 calIndexPointsInfluenceTotal(const aiScene* sc, int index, aiMesh* m
 		{
 			int vertexId = mesh->mBones[k]->mWeights[m].mVertexId;
 			float vertexIdWeight = mesh->mBones[k]->mWeights[m].mWeight;
-			//if(vertexIdWeight==1.0)
-			if (index == vertexId && vertexIdWeight == 1.0)
+			if (index == vertexId)//index == vertexId && vertexIdWeight == 1.0
 			{
 				aiMatrix4x4 offsetMatrix = mesh->mBones[k]->mOffsetMatrix;
 				aiString nameMesh = mesh->mBones[k]->mName;
@@ -71,7 +70,7 @@ aiMatrix4x4 calIndexPointsInfluenceTotal(const aiScene* sc, int index, aiMesh* m
 				totalWeight = 1.0;
 				break;
 			}
-
+/*
 			else if (index == vertexId && vertexIdWeight != 1.0)
 			{
 				aiMatrix4x4 offsetMatrix = mesh->mBones[k]->mOffsetMatrix;
@@ -93,6 +92,7 @@ aiMatrix4x4 calIndexPointsInfluenceTotal(const aiScene* sc, int index, aiMesh* m
 				totalWeight += vertexIdWeight;
 				break;
 			}
+*/
 		}
 	}
 	totalWeight;
@@ -112,46 +112,6 @@ void calIndexPointsInfluenceTotalInit()
 }
 
 
-
-
-aiVector3D chooseADposKey(int tick, aiNodeAnim* chnl)
-{
-	int numPositonKeys = chnl->mNumPositionKeys;
-	for (int i = 0; i < numPositonKeys - 1; i++)
-	{
-		int lastTime = (int)chnl->mPositionKeys[i].mTime;
-		int nowTime = (int)chnl->mPositionKeys[i + 1].mTime;
-		if (lastTime <= tick && tick < nowTime)
-		{
-			aiVector3D	posn1 = chnl->mPositionKeys[i].mValue;
-			aiVector3D	posn2 = chnl->mPositionKeys[i+1].mValue;
-			float theta = ((double)tick - (double)lastTime) / ((double)nowTime - (double)lastTime);
-
-			aiVector3D	posn = (1 - theta)*posn1 + theta*posn2;		
-			
-			return posn;
-		}
-	}
-}
-aiQuaternion chooseADrotKey(int tick, aiNodeAnim* chnl)
-{
-	int numRotationKeys = chnl->mNumRotationKeys;
-	for (int i = 0; i < numRotationKeys - 1; i++)
-	{
-		int lastTime = (int)chnl->mRotationKeys[i].mTime;
-		int nowTime = (int)chnl->mRotationKeys[i + 1].mTime;
-		if (lastTime <= tick && tick < nowTime)
-		{
-			aiQuaternion rotn1= chnl->mRotationKeys[i].mValue;
-			aiQuaternion rotn2 = chnl->mRotationKeys[i+1].mValue;
-			double factor = (tick - lastTime) / (nowTime - lastTime);
-
-			aiQuaternion rotn;
-			rotn.Interpolate(rotn,rotn1,rotn2,factor);
-			return rotn;
-		}
-	}
-}
 void motion(const aiScene* sc, int tick, aiNode* nd)//change node's mTransmition
 {
 	aiMatrix4x4 mTransformationParent;
@@ -187,7 +147,22 @@ void motion(const aiScene* sc, int tick, aiNode* nd)//change node's mTransmition
 	int numPositonKeys = chnl->mNumPositionKeys;
 	if (numPositonKeys > 1)
 	{
-		posn = chooseADposKey(tick, chnl);
+		int numPositonKeys = chnl->mNumPositionKeys;
+		for (int i = 0; i < numPositonKeys - 1; i++)
+		{
+			int lastTime = (int)chnl->mPositionKeys[i].mTime;
+			int nowTime = (int)chnl->mPositionKeys[i + 1].mTime;
+			if (lastTime <= tick && tick < nowTime)
+			{
+				aiVector3D	posn1 = chnl->mPositionKeys[i].mValue;
+				aiVector3D	posn2 = chnl->mPositionKeys[i + 1].mValue;
+				float theta = ((double)tick - (double)lastTime) / ((double)nowTime - (double)lastTime);
+
+				posn = (1 - theta)*posn1 + theta*posn2;
+
+			
+			}
+		}
 	}
 	else {
 		posn = chnl->mPositionKeys[0].mValue;
@@ -195,7 +170,23 @@ void motion(const aiScene* sc, int tick, aiNode* nd)//change node's mTransmition
 	int numRotationKeys = chnl->mNumRotationKeys;
 	if (numRotationKeys > 1)
 	{
-		rotn = chooseADrotKey(tick, chnl);
+		int numRotationKeys = chnl->mNumRotationKeys;
+		for (int i = 0; i < numRotationKeys - 1; i++)
+		{
+			int lastTime = (int)chnl->mRotationKeys[i].mTime;
+			int nowTime = (int)chnl->mRotationKeys[i + 1].mTime;
+			if (lastTime <= tick && tick < nowTime)
+			{
+				aiQuaternion rotn1 = chnl->mRotationKeys[i].mValue;
+				aiQuaternion rotn2 = chnl->mRotationKeys[i + 1].mValue;
+				double factor = (tick - lastTime) / (nowTime - lastTime);
+
+				
+				rotn.Interpolate(rotn, rotn1, rotn2, factor);
+				
+			}
+		}
+
 	}
 	else
 	{
@@ -228,8 +219,8 @@ void render(const aiScene* sc)
 		glEnable(GL_COLOR_MATERIAL);
 	else
 		glDisable(GL_COLOR_MATERIAL);
-	
-	
+
+
 	for (int k = 0; k < mesh->mNumFaces; k++)
 	{
 		aiFace* face = &mesh->mFaces[k];
@@ -243,7 +234,7 @@ void render(const aiScene* sc)
 		}
 
 		glBegin(face_mode);
-		for (int i = 0; i < face->mNumIndices; i++) 
+		for (int i = 0; i < face->mNumIndices; i++)
 		{
 			int index = face->mIndices[i];
 
@@ -261,7 +252,7 @@ void render(const aiScene* sc)
 			float yy = mesh->mVertices[index].y;
 			float zz = mesh->mVertices[index].z;
 			GLfloat temp[] = { xx, yy, zz };//use for debug
-			
+
 			aiMatrix4x4 mNew = allVertexAfterCalIndexPointsInfluence[index];
 			float xNew = xx*mNew.a1 + yy*mNew.a2 + zz*mNew.a3 + mNew.a4;// need to confirm
 			float yNew = xx*mNew.b1 + yy*mNew.b2 + zz*mNew.b3 + mNew.b4;
