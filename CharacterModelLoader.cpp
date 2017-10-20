@@ -17,7 +17,7 @@ using namespace std;
 #include "assimp_extras.h"
 
 const int TicksPerSec = 4640;//change 4640
-const char* fileName = "wuson.x";//change
+const char* fileName = "wuson.x";//change//dwarf.x
 const int chooseAnim = 0;//here can change 0:Wuson_Run  1:Wuson_Walk  2:Wuson_Bind
 
 const aiScene* scene = NULL;
@@ -70,7 +70,7 @@ aiMatrix4x4 calIndexPointsInfluenceTotal(const aiScene* sc, int index, aiMesh* m
 				totalWeight = 1.0;
 				break;
 			}
-/*
+
 			else if (index == vertexId && vertexIdWeight != 1.0)
 			{
 				aiMatrix4x4 offsetMatrix = mesh->mBones[k]->mOffsetMatrix;
@@ -92,7 +92,7 @@ aiMatrix4x4 calIndexPointsInfluenceTotal(const aiScene* sc, int index, aiMesh* m
 				totalWeight += vertexIdWeight;
 				break;
 			}
-*/
+
 		}
 	}
 	totalWeight;
@@ -209,7 +209,11 @@ void motion(const aiScene* sc, int tick, aiNode* nd)//change node's mTransmition
 void render(const aiScene* sc)
 {
 	calIndexPointsInfluenceTotalInit();
-	aiMesh* mesh = scene->mMeshes[0];
+
+	for (int yy = 0; yy < scene->mNumMeshes; yy++)
+	{
+
+		aiMesh* mesh = scene->mMeshes[yy];
 	if (mesh->HasNormals())
 		glEnable(GL_LIGHTING);
 	else
@@ -265,6 +269,7 @@ void render(const aiScene* sc)
 		glEnd();
 	}
 }
+}
 
 
 void special(int key, int x, int y)
@@ -279,10 +284,10 @@ void special(int key, int x, int y)
 
 void update(int value)
 {
-	tick++;
+	tick= tick+150;
 	if (tick > TicksPerSec) tick = 0;
 	glutPostRedisplay();
-	glutTimerFunc(1, update, 1);
+	glutTimerFunc(300, update, 1);
 }
 
 void drawFloor()
@@ -391,7 +396,7 @@ int main(int argc, char** argv)
 
 	initialise();
 	glutDisplayFunc(display);
-	glutTimerFunc(5, update, 1);//glutTimerFunc(50, updateAnimation, 1);
+	glutTimerFunc(300, update, 1);//glutTimerFunc(50, updateAnimation, 1);
 	glutKeyboardFunc(keyboard);
 	glutSpecialFunc(special);
 	glutMainLoop();

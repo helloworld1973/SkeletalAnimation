@@ -21,12 +21,11 @@ float rot_x = 0.0;
 float eye_x, eye_z, look_x, look_z = -1.;
 aiVector3D scene_min, scene_max, scene_center;
 ofstream fileout;
-int moveIndex = 0;
 int tick = 0;
 aiVector3D* verts;
 aiVector3D* norm;
 const char* fileName = "dwarf.x";//change
-int gogogo = 0;
+
 
 
 bool loadModel(const char* fileName)
@@ -108,8 +107,6 @@ void UpdateNodemTransformation() {
 	aiNodeAnim *chnl;
 	aiMatrix4x4 newTransformation;
 	aiVector3D posn;
-
-	tick = moveIndex + 1;
 
 	for (int i = 0; i < anim->mNumChannels; i++) 
 	{
@@ -202,26 +199,21 @@ void updateVertexCoordinate() {
 
 void update(int value)
 {
-	gogogo += 30;
 	aiAnimation *anim;
 	anim = scene->mAnimations[0];
 
-	if (moveIndex > (int)anim->mDuration) moveIndex = 0;
-	else 	moveIndex += 1;
+	if (tick > (int)anim->mDuration) tick = 0;
+	else 	tick += 1;
 
-	UpdateNodemTransformation();
-	updateVertexCoordinate();
-
-	render(scene, scene->mRootNode);
 	glutPostRedisplay();
 	glutTimerFunc(50, update, 0);
 }
 
 void drawFloor()
 {
-	glDisable(GL_LIGHTING);			//Disable lighting when drawing floor.
+	glDisable(GL_LIGHTING);			
 
-	glColor3f(0., 0.5, 0.);			//Floor colour
+	glColor3f(0., 0.5, 0.);			
 
 	for (float i = -50; i <= 50; i++)
 	{
@@ -340,13 +332,10 @@ void display()
 	glLightfv(GL_LIGHT0, GL_POSITION, pos);
 
 	glRotatef(rot_x, 1, 0, 0);
-	glRotatef(angle, 0.f, 1.f, 0.f);  //Continuous rotation about the y-axis
+	glRotatef(angle, 0.f, 1.f, 0.f);  
 
 	drawFloor();
-	
 
-	//glColor3f(1., 0.78, 0.06);
-	// scale the whole asset to fit into our view frustum 
 
 	glScalef(tmp, tmp, tmp);
 
@@ -355,9 +344,10 @@ void display()
 	drawShield(40, 20, 0, 40);
 	drawShield(40, 20, -50, 50);
 	
-	// center the model
 	glTranslatef(-scene_center.x, -scene_center.y, -scene_center.z);
 
+	UpdateNodemTransformation();
+	updateVertexCoordinate();
 	aiNode* rootNode = scene->mRootNode;
 	render(scene, rootNode);
 

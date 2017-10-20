@@ -15,8 +15,8 @@ using namespace std;
 #include <assimp/postprocess.h>
 #include "assimp_extras.h"
 
-const int TicksPerSec = 2751;//219;//change
-const char* fileName = "01_01.bvh";//change
+const int TicksPerSec = 2751; //2751;//219;//change
+const char* fileName = "01_01.bvh";//"Dance.bvh";//"01_01.bvh";//change
 
 const aiScene* scene = NULL;
 float angle = 0.0;
@@ -227,6 +227,7 @@ void update(int value)
 	if (tick > TicksPerSec) tick = 0;
 	glutPostRedisplay();
 	glutTimerFunc(1000.0 / 120.0, update, 1);
+	//glutTimerFunc(50, update, 1);
 }
 
 void drawFloor()
@@ -377,7 +378,8 @@ int main(int argc, char** argv)
 
 	initialise();
 	glutDisplayFunc(display);
-	glutTimerFunc(1000.0/120.0, update, 1);//glutTimerFunc(50, updateAnimation, 1);
+	glutTimerFunc(1000.0/120.0, update, 1);
+	//glutTimerFunc(50, update, 1);
 	glutKeyboardFunc(keyboard);
 	glutSpecialFunc(special);
 	glutMainLoop();
